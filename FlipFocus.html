@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>FlipFocus — 手机翻转仪式实验</title>
+<title>FlipFocus — 手机翻转检测工具</title>
 <style>
   :root {
     --bg: #F5F6FA;
@@ -149,7 +149,7 @@
     <div class="subtitle">注意力仪式研究 · 传感器采集</div>
     <div class="perm-box">
       <h3>📱 需要传感器权限</h3>
-      <p>本实验需要访问设备的运动传感器和光线传感器来检测手机翻转状态。<br>不收集任何个人身份信息、位置或通信内容。</p>
+      <p>本工具需要访问设备的运动传感器和光线传感器来检测手机翻转状态。<br>不收集任何个人身份信息、位置或通信内容。</p>
       <p style="color:#157A3A;font-size:12px">所有数据仅存储在浏览器本地，不上传云端</p>
       <button class="btn btn-primary" onclick="requestPermission()">授权并开始</button>
     </div>
@@ -157,24 +157,32 @@
 </div>
 
 <!-- ════════════════════════════════════════════════════ -->
-<!-- Screen 1: 实验指南 (Guide)                          -->
+<!-- Screen 1: 使用说明 (Guide)                          -->
 <!-- ════════════════════════════════════════════════════ -->
 <div id="screen-guide" class="screen guide">
   <div class="title">FlipFocus</div>
-  <div class="subtitle">实验操作指南 · 一步一步跟着做</div>
+  <div class="subtitle">使用说明 · 一步一步跟着做</div>
+
+  <!-- 这是什么 -->
+  <div class="card highlight">
+    <div class="step-desc" style="color:var(--text)">
+      <strong>📱 用浏览器测手机翻转</strong><br>
+      这个页面从手机传感器读取加速度与光线，自动判断手机是否被翻到面朝下，
+      并把数据导出成 JSON 文件。不需要安装任何 App。<br>
+      <span style="font-size:11px;color:var(--muted)">所有数据只保存在你自己的浏览器里，不上传服务器。</span>
+    </div>
+  </div>
 
   <!-- 流程概览 -->
   <div class="card">
     <div style="display:flex;justify-content:space-around;text-align:center">
-      <div><div style="font-size:28px">📋</div><div style="font-size:11px;color:var(--muted)">1.准备</div></div>
+      <div><div style="font-size:28px">📱</div><div style="font-size:11px;color:var(--muted)">1.授权</div></div>
       <div style="color:var(--muted)">→</div>
-      <div><div style="font-size:28px">📱</div><div style="font-size:11px;color:var(--muted)">2.校准</div></div>
+      <div><div style="font-size:28px">🎛️</div><div style="font-size:11px;color:var(--muted)">2.校准</div></div>
       <div style="color:var(--muted)">→</div>
       <div><div style="font-size:28px">⏱️</div><div style="font-size:11px;color:var(--muted)">3.采集</div></div>
       <div style="color:var(--muted)">→</div>
-      <div><div style="font-size:28px">📊</div><div style="font-size:11px;color:var(--muted)">4.导出</div></div>
-      <div style="color:var(--muted)">→</div>
-      <div><div style="font-size:28px">💻</div><div style="font-size:11px;color:var(--muted)">5.分析</div></div>
+      <div><div style="font-size:28px">📦</div><div style="font-size:11px;color:var(--muted)">4.导出</div></div>
     </div>
   </div>
 
@@ -183,12 +191,12 @@
     <div style="display:flex;align-items:flex-start">
       <span class="step-num">1</span>
       <div>
-        <div class="step-title">打开采集工具（10 秒）</div>
+        <div class="step-title">打开页面并授权（10 秒）</div>
         <div class="step-desc">
-          用手机浏览器打开 <strong>FlipFocus.html</strong> 这个文件。<br>
-          <span style="color:var(--orange)">iOS</span>：必须用 <strong>Safari</strong> 打开<br>
+          用手机浏览器打开本页。<br>
+          <span style="color:var(--orange)">iOS</span>：需用 <strong>Safari</strong>，并手动点「授权」<br>
           <span style="color:var(--green)">Android</span>：Chrome / Edge / 自带浏览器都可以<br>
-          如弹出权限请求，点<strong>「授权」</strong>
+          首次会弹出传感器权限请求，点<strong>「授权并开始」</strong>。
         </div>
       </div>
     </div>
@@ -201,10 +209,10 @@
       <div>
         <div class="step-title">校准传感器阈值（1 分钟）</div>
         <div class="step-desc">
-          切换到<strong>「采集」</strong>标签，把手机<strong>面朝下放在桌上</strong>：<br>
+          切到<strong>「采集」</strong>标签，把手机<strong>面朝下放在桌上</strong>：<br>
           · accZ 应显示约 <strong>-0.9 ~ -1.0g</strong>（若偏差大，调 Z 阈值）<br>
           · 光线值应 <strong>&lt; 10 lux</strong>（若偏高，调光线阈值）<br>
-          <span style="color:var(--red)">⚠ 每台手机第一次用都要校准！</span>
+          <span style="color:var(--red)">⚠ 每台手机第一次使用都要校准</span>
         </div>
       </div>
     </div>
@@ -215,48 +223,13 @@
     <div style="display:flex;align-items:flex-start">
       <span class="step-num">3</span>
       <div>
-        <div class="step-title">开始实验片段（27 分钟/个）</div>
+        <div class="step-title">开始采集</div>
         <div class="step-desc">
-          在采集页面设置：<strong>被试编号</strong> + <strong>实验条件</strong> + <strong>第1/2次</strong>，<br>
-          然后点「开始采集」，倒计时 25 分钟后自动结束。<br>
-          <span style="color:var(--muted)">每人 4 个条件 × 2 次重复 = 8 个片段</span>
+          填一个<strong>编号</strong>（随便起，只用来区分数据文件），点「开始采集」。<br>
+          默认 25 分钟，倒计时结束自动停止；也可以随时点「提前结束」保留已采集的数据。<br>
+          <span style="font-size:11px;color:var(--muted)">想快速试一下导出功能，可勾选 Debug 模式（缩短为 2 分钟）。</span>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- 4 conditions table -->
-  <div class="card highlight">
-    <div class="label">四种实验条件（每人全做，每种 2 次 = 每人 8 个片段，4人共 32 片段）</div>
-    <table class="guide-tbl">
-      <tr><th>条件</th><th>谁翻手机？</th><th>手机在哪？</th><th>指导语</th></tr>
-      <tr>
-        <td class="cond-a">A 主动翻转</td>
-        <td><strong>学生自己</strong></td>
-        <td>面朝下</td>
-        <td style="font-size:11px">"请你自己把手机翻过来，然后开始做题"</td>
-      </tr>
-      <tr>
-        <td>B 面朝上</td>
-        <td>不翻</td>
-        <td>面朝上</td>
-        <td style="font-size:11px">"手机就放这里，你开始做题"</td>
-      </tr>
-      <tr>
-        <td>C 无手机</td>
-        <td>-</td>
-        <td>拿走</td>
-        <td style="font-size:11px">"我把手机拿到另一个房间去"</td>
-      </tr>
-      <tr>
-        <td class="cond-d">D 被动翻转</td>
-        <td><strong>实验员帮翻</strong></td>
-        <td>面朝下</td>
-        <td style="font-size:11px">"我来帮你翻，好了，你开始做题"</td>
-      </tr>
-    </table>
-    <div style="font-size:12px;color:var(--orange);margin-top:8px;text-align:center">
-      ⭐ A 和 D 的唯一区别是"谁动手"——这是整个研究的核心问题
     </div>
   </div>
 
@@ -267,48 +240,23 @@
       <div>
         <div class="step-title">导出数据</div>
         <div class="step-desc">
-          时间到后震动提醒，点<strong>「导出数据」</strong>下载 1 个文件：<br>
-          <code style="background:var(--border);padding:1px 6px;border-radius:4px;font-size:11px">xxx_bundle.json</code> 包含传感器数据 + 翻转事件 + 实验信息<br>
-          <span style="font-size:11px;color:var(--muted)">（所有数据打包在一个文件里，微信直接发给实验员即可）</span>
+          结束后点<strong>「导出数据」</strong>下载一个 JSON 文件：<br>
+          <code style="background:var(--border);padding:1px 6px;border-radius:4px;font-size:11px">xxx_bundle.json</code>
+          包含传感器时序 + 翻转事件 + 本次采集信息<br>
+          <span style="font-size:11px;color:var(--muted)">（所有数据打包在一个文件里）</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Step 5 -->
-  <div class="card">
-    <div style="display:flex;align-items:flex-start">
-      <span class="step-num">5</span>
-      <div>
-        <div class="step-title">分析数据</div>
-        <div class="step-desc">
-          全部 32 个片段采集完后，把 data 文件夹拷到电脑：<br>
-          <code style="background:var(--border);padding:2px 8px;border-radius:4px;font-size:11px;display:block;margin:6px 0">cd analysis<br>
-          pip install -r requirements.txt<br>
-          python 01_preprocess.py --data-dir ../data/<br>
-          python 02_analysis.py<br>
-          python 03_visualize.py</code>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Checklist -->
-  <div class="card">
-    <div class="label">实验进度检查清单</div>
-    <div id="checklist"></div>
-    <div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">点击勾选，进度保存在浏览器中</div>
-  </div>
-
-  <!-- Key reminders -->
-  <div class="card highlight-red">
+  <!-- 机型差异 -->
+  <div class="card highlight">
     <div class="step-desc" style="color:var(--text)">
-      <strong>⚠ 关键提醒</strong><br>
-      · 每人 4 条件 × 2 次 = 8 个片段，4 人共 32 个<br>
-      · 每个片段结束<strong>立刻导出</strong>，不要攒到最后<br>
-      · 做题用打印的题目纸，手机只负责采集传感器<br>
-      · 条件 A 和 D 指导语必须严格区分<br>
-      · Day1 全天采集，Day2 分析+写论文
+      <strong>📶 不同手机的传感器不一样</strong><br>
+      页面启动时会自动探测可用传感器，并选择合适的融合方式：<br>
+      · <strong>加速度计 + 光线</strong>（多数 Android Chrome）<br>
+      · <strong>仅加速度计</strong>（iOS Safari，或未开放光线接口的机型）<br>
+      缺少某个传感器不会中断采集，只是判定依据少一项。
     </div>
   </div>
 </div>
@@ -316,21 +264,12 @@
 <!-- ═══ Screen 2: 采集工具 (Setup) ═══ -->
 <div id="screen-setup" class="screen">
   <div class="title">FlipFocus</div>
-  <div class="subtitle">注意力仪式研究采集工具</div>
+  <div class="subtitle">手机翻转检测与数据采集工具</div>
 
   <div class="card">
-    <div class="label">被试编号</div>
-    <div class="row" id="subj-chips"></div>
-  </div>
-
-  <div class="card">
-    <div class="label">实验条件</div>
-    <div id="cond-btns"></div>
-  </div>
-
-  <div class="card">
-    <div class="label">重复次数</div>
-    <div class="row" id="rep-chips"></div>
+    <div class="label">编号（用来区分数据文件，随意填）</div>
+    <input id="subj-input" type="text" placeholder="例如：测试1"
+           style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px">
   </div>
 
   <button class="btn btn-primary" onclick="startSession()" id="btn-start">开始采集（25分钟）</button>
@@ -367,8 +306,6 @@
 
   <div class="info-row">
     <span id="info-subj"></span>
-    <span id="info-cond"></span>
-    <span id="info-rep"></span>
   </div>
 
   <div class="card">
@@ -401,7 +338,7 @@
     <button class="btn btn-ghost" onclick="earlyStop()" style="border-color:var(--border)">提前结束</button>
   </div>
   <div id="session-done" style="display:none">
-    <button class="btn btn-green" onclick="exportData()" id="btn-export" style="width:100%;padding:14px;font-size:17px;margin-bottom:12px">📦 实验完成，导出数据</button>
+    <button class="btn btn-green" onclick="exportData()" id="btn-export" style="width:100%;padding:14px;font-size:17px;margin-bottom:12px">📦 采集完成，导出数据</button>
     <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px">⬆ 点击上方绿色大按钮下载 bundle.json（含传感器原始数据）</p>
     <button class="btn btn-ghost" onclick="resetToSetup()" style="margin-top:4px">返回采集页</button>
   </div>
@@ -418,7 +355,7 @@
 <!-- ═══ Bottom Navigation ═══ -->
 <div class="bottom-nav" id="bottomNav">
   <div class="nav-item active" onclick="showScreen('screen-guide')" id="nav-guide">
-    <span class="nav-icon">📋</span>实验指南
+    <span class="nav-icon">📋</span>使用说明
   </div>
   <div class="nav-item" onclick="showScreen('screen-setup')" id="nav-collect">
     <span class="nav-icon">📱</span>采集工具
@@ -432,12 +369,10 @@
 // ═══════════════════════════════════════════════════════════
 // State
 // ═══════════════════════════════════════════════════════════
-const SUBJECTS = ['P1','P2','P3','P4'];
-const CONDITIONS = ['A_主动翻转','B_面朝上','C_无手机','D_被动翻转'];
-
+// 公开版：只保留工具与测试功能，不含研究设计与被试标识
 let state = {
-  subject: 'P1',
-  condition: 'A_主动翻转',
+  subject: '',
+  condition: '',
   repetition: 1,
   cfgZ: -0.75,
   cfgLight: 15,
@@ -464,7 +399,7 @@ let lightSensorAvailable = false;
 function showScreen(id) {
   // Don't allow navigation during active session
   if (state.sessionActive && id !== 'screen-session') {
-    showToast('实验采集中，请先完成或结束当前片段', 'warn'); return;
+    showToast('采集中，请先完成或结束当前采集', 'warn'); return;
   }
 
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -493,7 +428,7 @@ async function requestPermission() {
   if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
     try {
       const resp = await DeviceMotionEvent.requestPermission();
-      if (resp !== 'granted') { showToast('需要传感器权限才能进行实验', 'warn'); return; }
+      if (resp !== 'granted') { showToast('需要传感器权限才能进行采集', 'warn'); return; }
     } catch(e) { showToast('权限请求失败: ' + e.message, 'warn'); return; }
   }
   permGranted = true;
@@ -502,65 +437,15 @@ async function requestPermission() {
 }
 
 function initSetupScreen() {
-  document.getElementById('subj-chips').innerHTML = SUBJECTS.map(p =>
-    `<span class="chip${state.subject===p?' active':''}" onclick="selectSubject('${p}')">${p}</span>`
-  ).join('');
-
-  document.getElementById('cond-btns').innerHTML = CONDITIONS.map(c =>
-    `<button class="cond-btn${state.condition===c?' active':''}" onclick="selectCondition('${c}')">${c}</button>`
-  ).join('');
-
-  document.getElementById('rep-chips').innerHTML = [1,2].map(r =>
-    `<span class="chip${state.repetition===r?' active':''}" onclick="selectRepetition(${r})">第${r}次</span>`
-  ).join('');
-
+  const el = document.getElementById('subj-input');
+  if (el) el.value = state.subject;
   document.getElementById('cfg-z').value = state.cfgZ;
   document.getElementById('cfg-light').value = state.cfgLight;
 }
-
-function selectSubject(p) { state.subject = p; initSetupScreen(); }
-function selectCondition(c) { state.condition = c; initSetupScreen(); }
-function selectRepetition(r) { state.repetition = r; initSetupScreen(); }
 function updateConfig() {
   state.cfgZ = parseFloat(document.getElementById('cfg-z').value) || -0.75;
   state.cfgLight = parseFloat(document.getElementById('cfg-light').value) || 15;
   showToast(`阈值: Z<${state.cfgZ}g, 光线<${state.cfgLight}lux`, 'ok');
-}
-
-// ═══════════════════════════════════════════════════════════
-// Checklist
-// ═══════════════════════════════════════════════════════════
-const CHECKLIST_ITEMS = [
-  'Day1 上午: 4人集合 — 签知情同意书 + 校准手机',
-  'Day1 上午: P1+P2 同时完成 4条件(ABCD)',
-  'Day1 上午: P3+P4 同时完成 4条件(ABCD)',
-  'Day1 下午: P1+P2 第2次重复 4条件',
-  'Day1 下午: P3+P4 第2次重复 4条件',
-  'Day1: 全部 32 个片段数据导出到电脑',
-  'Day2 上午: 批改 32 份题目 + 录入问卷',
-  'Day2 上午: 运行分析脚本（01→02→03→04）',
-  'Day2 下午: 论文撰写（Introduction + System）',
-  'Day2 下午: 论文撰写（Results + Discussion）',
-  'Day2 晚上: 图表润色 + 参考文献 + 检查',
-  'Day2 23:00前: 投 UbiComp 2026 Teenager Show',
-];
-
-function renderChecklist() {
-  const checked = JSON.parse(localStorage.getItem('flipfocus_checklist') || '{}');
-  document.getElementById('checklist').innerHTML = CHECKLIST_ITEMS.map((item, i) => {
-    const done = checked[i] || false;
-    return `<div class="cl-item" onclick="toggleCheck(${i})">
-      <div class="cl-box${done?' done':''}"></div>
-      <span class="cl-text${done?' done':''}">${item}</span>
-    </div>`;
-  }).join('');
-}
-
-function toggleCheck(i) {
-  const checked = JSON.parse(localStorage.getItem('flipfocus_checklist') || '{}');
-  checked[i] = !checked[i];
-  localStorage.setItem('flipfocus_checklist', JSON.stringify(checked));
-  renderChecklist();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -576,6 +461,8 @@ function toggleDebug() {
 function getSessionDuration() { return state.debugMode ? 2 : 25; }
 
 function startSession() {
+  const el = document.getElementById('subj-input');
+  if (el) state.subject = (el.value || '').trim() || '测试';
   state.dataLog = [];
   state.flipEvents = [];
   state.elapsed = 0;
@@ -590,8 +477,6 @@ function startSession() {
   if (state.flipConfirmTimer) clearTimeout(state.flipConfirmTimer);
 
   document.getElementById('info-subj').textContent = state.subject;
-  document.getElementById('info-cond').textContent = state.condition;
-  document.getElementById('info-rep').textContent = '第' + state.repetition + '次';
   updateTimerUI();
   document.getElementById('session-actions').style.display = 'block';
   document.getElementById('session-done').style.display = 'none';
@@ -767,7 +652,7 @@ function endSession() {
   document.getElementById('session-actions').style.display = 'none';
   document.getElementById('session-done').style.display = 'block';
   document.getElementById('badge').className = 'status-badge status-down';
-  document.getElementById('badge').textContent = '✅ 实验完成';
+  document.getElementById('badge').textContent = '✅ 采集完成';
   setNavVisible(true);
 }
 
@@ -777,7 +662,7 @@ function earlyStop() {
 }
 
 function exportData() {
-  const prefix = state.subject + '_' + state.condition + '_R' + state.repetition + '_' + Date.now();
+  const prefix = [state.subject, state.condition].filter(Boolean).join('_') + '_' + Date.now();
 
   const meta = {
     participant: state.subject, condition: state.condition, repetition: state.repetition,
@@ -882,7 +767,7 @@ function refreshDataList() {
   }
   document.getElementById('data-list').innerHTML = h.map((r, i) => `
     <div style="background:var(--card);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border)">
-      <div style="font-weight:700;font-size:14px;margin-bottom:4px">${r.meta.participant} · ${r.meta.condition} · 第${r.meta.repetition}次</div>
+      <div style="font-weight:700;font-size:14px;margin-bottom:4px">${[r.meta.participant, r.meta.condition].filter(Boolean).join(' · ') || '未命名'}</div>
       <div style="font-size:12px;color:var(--muted)">${r.meta.date} | 翻转${r.meta.flip_count}次 | 数据点${r.meta.data_points}</div>
       <button onclick="deleteHistoryItem(${h.length-1-i})" style="margin-top:6px;padding:4px 10px;border-radius:6px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:11px;cursor:pointer">删除</button>
     </div>
@@ -918,7 +803,6 @@ function showToast(msg, type) {
 // Boot
 // ═══════════════════════════════════════════════════════════
 (function() {
-  renderChecklist();
   // 检查是否有未恢复的autosave数据
   var saved = localStorage.getItem('flipfocus_autosave');
   if (saved) {
@@ -927,7 +811,7 @@ function showToast(msg, type) {
       if (backup.sensors && backup.sensors.length > 0) {
         var mins = Math.floor(backup.elapsed / 60);
         var secs = backup.elapsed % 60;
-        if (confirm('⚠️ 检测到未恢复的实验数据！\n\n被试：' + backup.participant + '\n条件：' + backup.condition + '\n已采集：' + mins + '分' + secs + '秒\n传感器数据：' + backup.sensors.length + '条\n\n点「确定」立即导出，点「取消」忽略。')) {
+        if (confirm('⚠️ 检测到上次未导出的采集数据！\n\n编号：' + (backup.participant || '未填') + '\n已采集：' + mins + '分' + secs + '秒\n传感器数据：' + backup.sensors.length + '条\n\n点「确定」立即导出，点「取消」忽略。')) {
           state.subject = backup.participant;
           state.condition = backup.condition;
           state.repetition = backup.repetition;

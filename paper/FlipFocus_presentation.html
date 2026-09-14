@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>FlipFocus — CHCI 2026 Presentation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Arial", "Helvetica", sans-serif; background: #1a1a2e; color: #eee; overflow: hidden; }
+  .slide-container { width: 100vw; height: 100vh; position: relative; }
+  .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 80px; opacity: 0; transition: opacity 0.5s; text-align: center; }
+  .slide.active { opacity: 1; z-index: 1; }
+  .slide h1 { font-size: 42pt; margin-bottom: 20px; color: #fff; font-weight: 800; }
+  .slide h2 { font-size: 28pt; margin-bottom: 30px; color: #B8978A; font-weight: 600; }
+  .slide h3 { font-size: 22pt; margin-bottom: 16px; color: #8FA894; }
+  .slide p { font-size: 18pt; line-height: 1.8; max-width: 900px; margin: 8px 0; }
+  .slide ul { text-align: left; max-width: 850px; margin: 0 auto; }
+  .slide li { font-size: 17pt; line-height: 2; margin: 4px 0; }
+  .slide .sub { font-size: 14pt; color: #999; margin-top: 16px; }
+  .slide .highlight { color: #E8A860; font-weight: bold; }
+  .slide .accent { color: #7B8FA1; font-weight: bold; }
+  .slide .tagline { font-size: 20pt; color: #B8978A; font-style: italic; margin-top: 30px; }
+  .slide .big-number { font-size: 56pt; font-weight: 900; color: #E8A860; margin: 10px 0; }
+  .slide .stat-row { display: flex; gap: 40px; justify-content: center; margin: 16px 0; }
+  .slide .stat-box { text-align: center; }
+  .slide .stat-box .val { font-size: 32pt; font-weight: 800; color: #7B8FA1; }
+  .slide .stat-box .lbl { font-size: 12pt; color: #aaa; }
+  .slide .columns { display: flex; gap: 30px; max-width: 950px; justify-content: center; text-align: left; }
+  .slide .col { flex: 1; }
+  .slide .col h3 { font-size: 16pt; margin-bottom: 8px; }
+  .slide .col p, .slide .col li { font-size: 14pt; line-height: 1.6; }
+  .progress { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 11pt; color: #666; z-index: 10; }
+  .nav { position: fixed; bottom: 16px; right: 24px; font-size: 11pt; color: #555; z-index: 10; }
+  .notes { position: fixed; bottom: 0; left: 0; right: 0; background: #0d0d1a; color: #8a8; padding: 10px 24px; font-size: 11pt; line-height: 1.5; z-index: 5; border-top: 1px solid #333; display: none; }
+  .notes.show { display: block; }
+  .notes-toggle { position: fixed; bottom: 16px; left: 24px; font-size: 10pt; color: #555; cursor: pointer; z-index: 10; background: none; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; }
+  .notes-toggle:hover { color: #aaa; border-color: #888; }
+  .slide .finding-box { background: rgba(255,255,255,0.06); border-left: 3px solid #E8A860; padding: 12px 20px; margin: 12px 0; text-align: left; max-width: 850px; border-radius: 0 6px 6px 0; }
+  .slide .finding-box p { font-size: 15pt; margin: 4px 0; color: #ddd; }
+  table { border-collapse: collapse; margin: 12px auto; font-size: 14pt; }
+  th { background: rgba(255,255,255,0.1); padding: 8px 16px; border: 1px solid #555; }
+  td { padding: 6px 16px; border: 1px solid #444; }
+  .check { color: #6E8B7A; }
+  .cross { color: #9B6E6E; }
+</style>
+</head>
+<body>
+
+<div class="slide-container" id="slides">
+
+  <!-- Slide 1: Title -->
+  <div class="slide active">
+    <h1>FlipFocus</h1>
+    <h2>一种基于浏览器多传感器融合的手机翻转行为检测与分析工具</h2>
+    <p class="tagline">将移动HCI实验的部署成本从<span class="highlight">"开发App"</span>降至<span class="highlight">"发送链接"</span></p>
+    <p class="sub">Decheng Wang &nbsp;|&nbsp; Shanghai Sanlin High School &nbsp;|&nbsp; CHCI 2026</p>
+  </div>
+
+  <!-- Slide 2: Problem -->
+  <div class="slide">
+    <h2>研究动机</h2>
+    <p>许多人在工作前会<span class="highlight">习惯性将手机翻转面朝下</span>——<br>这个2秒的动作是否承载着"专注模式开启"的仪式感？</p>
+    <div style="margin-top: 30px;">
+      <p style="font-size:16pt;color:#999;">但要研究这个问题，面临一个</p>
+      <p style="font-size:22pt;color:#E8A860;">根本性的工具障碍</p>
+    </div>
+    <div class="columns" style="margin-top:20px;">
+      <div class="col"><h3 style="color:#9B6E6E;">✗ 部署门槛高</h3><p>每次实验需开发原生App，应用商店审核，被试安装——耗时数周</p></div>
+      <div class="col"><h3 style="color:#9B6E6E;">✗ 缺乏针对性工具</h3><p>现有EMA工具面向通用经验采样，不检测手机翻转行为</p></div>
+      <div class="col"><h3 style="color:#9B6E6E;">✗ 传感器兼容假设</h3><p>iOS Safari无环境光API，华为禁接近传感器——固定组合工具大量失败</p></div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Key Idea -->
+  <div class="slide">
+    <h2>核心设计理念</h2>
+    <p style="font-size:20pt;max-width:800px;line-height:2;">
+      通过<span class="highlight">自适应的三级传感器退化策略</span>，<br>
+      将跨设备传感器差异从<span style="color:#9B6E6E;">"实验缺陷"</span>转化为<span style="color:#6E8B7A;">"设计特性"</span>
+    </p>
+    <div class="stat-row" style="margin-top:36px;">
+      <div class="stat-box"><div class="val">0.970</div><div class="lbl">F1 值（双传感器模式）</div></div>
+      <div class="stat-box"><div class="val">3 级</div><div class="lbl">自适应退化（全→双→基本）</div></div>
+      <div class="stat-box"><div class="val">0 安装</div><div class="lbl">浏览器即用，扫码/链接</div></div>
+    </div>
+  </div>
+
+  <!-- Slide 4: System Design -->
+  <div class="slide">
+    <h2>三大核心模块</h2>
+    <div class="columns">
+      <div class="col">
+        <h3 style="color:#7B8FA1;">模块A：退化引擎</h3>
+        <p>运行时探测加速度计+光线+接近传感器可用性</p>
+        <p>→ 自动选择融合模式</p>
+        <p>→ 缺失传感器不中断实验</p>
+        <p style="color:#888;font-size:12pt;">UI实时显示数据质量</p>
+      </div>
+      <div class="col">
+        <h3 style="color:#B8978A;">模块B：状态机</h3>
+        <p>3秒确认窗口过滤误触发</p>
+        <p>±5秒过渡期排除</p>
+        <p>XY轴静态性校验(≤0.1g)</p>
+        <p style="color:#888;font-size:12pt;">F1=0.970 双传感器模式</p>
+      </div>
+      <div class="col">
+        <h3 style="color:#8FA894;">模块C：实验生态</h3>
+        <p>四条件组内设计范式</p>
+        <p>标准化材料包+自评问卷</p>
+        <p>Python全流程分析管线</p>
+        <p style="color:#888;font-size:12pt;">发链接→出图表的完整闭环</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Key Finding 1 — Sensor Data -->
+  <div class="slide">
+    <h2>真实场景可行性验证</h2>
+    <p style="font-size:15pt;color:#999;">4名被试 × 25分钟会话 × 4种条件 | 首次回收完整传感器数组</p>
+    <div class="finding-box">
+      <p><span class="highlight">发现1:</span> P1（主动翻转）4次翻转循环，面朝下共452s<br>
+      <span style="color:#888;font-size:13pt;">→ 状态机正确捕获所有翻转事件，3秒窗口有效过滤噪声</span></p>
+    </div>
+    <div class="finding-box">
+      <p><span class="highlight">发现2:</span> P2（面朝上对照）<span style="color:#E8A860;">自发翻转6次</span>，共265s<br>
+      <span style="color:#888;font-size:13pt;">→ 被告知"保持面朝上"仍无法抑制——翻转行为具有习惯性</span></p>
+    </div>
+    <div class="finding-box">
+      <p><span class="highlight">发现3:</span> 4.9秒超短面朝下时段<br>
+      <span style="color:#888;font-size:13pt;">→ 被试意识到错误立即纠正——指导语有约束但不完全</span></p>
+    </div>
+  </div>
+
+  <!-- Slide 6: Key Finding 2 — Self-Report -->
+  <div class="slide">
+    <h2>自评专注度分析</h2>
+    <div class="stat-row">
+      <div class="stat-box"><div class="val">19.5</div><div class="lbl">主动翻转中位数</div></div>
+      <div class="stat-box"><div class="val">15.5</div><div class="lbl">面朝上中位数</div></div>
+      <div class="stat-box"><div class="val">p=0.014</div><div class="lbl">Friedman检验</div></div>
+    </div>
+    <div class="finding-box" style="margin-top:20px;">
+      <p><span class="highlight">关键发现:</span> 被动翻转（实验员帮翻）未显著高于面朝上</p>
+      <p style="font-size:14pt;">→ <span class="highlight">仅靠手机面朝下的物理状态不够——执行翻转的"主体性"可能是关键</span></p>
+    </div>
+    <div class="finding-box">
+      <p><span class="highlight">效度验证:</span> 自评专注度 vs 答题正确率：<span class="accent">r = 0.771, p < 0.001</span></p>
+      <p style="font-size:14pt;">→ 问卷成功捕获真实专注信号（非主观偏差）</p>
+    </div>
+  </div>
+
+  <!-- Slide 7: Comparison Table -->
+  <div class="slide">
+    <h2>与已有工作的差异</h2>
+    <table>
+      <tr><th>工具/研究</th><th>零安装</th><th>传感器自适应</th><th>翻转检测</th><th>实验配套</th></tr>
+      <tr><td>PIEL Survey</td><td class="cross">✗</td><td>—</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>浏览器传感器综述</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+      <tr><td>Ward等（实验室）</td><td>—</td><td>—</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+      <tr style="background:rgba(232,168,96,0.15);"><td><strong>FlipFocus（本文）</strong></td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+    </table>
+    <p class="tagline" style="margin-top:20px;">唯一在全部四个维度上同时提供支持的平台</p>
+  </div>
+
+  <!-- Slide 8: Contributions -->
+  <div class="slide">
+    <h2>四项核心贡献</h2>
+    <div style="text-align:left;max-width:800px;">
+      <div class="finding-box"><p><span class="highlight">C1</span> 自适应三级传感器退化策略 — 运行时检测，自动切换融合模式</p></div>
+      <div class="finding-box"><p><span class="highlight">C2</span> 3秒确认窗口状态机 — F1=0.970，有效区分意图翻转与噪声</p></div>
+      <div class="finding-box"><p><span class="highlight">C3</span> 完整实验生态系统 — 材料包+分析管线，发链接→出图表</p></div>
+      <div class="finding-box"><p><span class="highlight">C4</span> 真实场景验证 — 首批完整25分钟传感器数据，r=0.771</p></div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Conclusion -->
+  <div class="slide">
+    <h2>总结</h2>
+    <p style="font-size:24pt;max-width:800px;line-height:2;">
+      FlipFocus 将移动HCI实验的部署成本从<br>
+      <span style="color:#9B6E6E;text-decoration:line-through;">"开发一个App"</span><br>
+      降至<br>
+      <span class="highlight" style="font-size:28pt;">"发送一条链接"</span>
+    </p>
+    <p class="sub" style="margin-top:30px;">代码、材料、分析管线全部开源 &nbsp;|&nbsp; 面向高中生到专业研究者</p>
+  </div>
+
+  <!-- Slide 10: Thank You -->
+  <div class="slide">
+    <h1 style="font-size:52pt;">谢谢</h1>
+    <h2>Questions?</h2>
+    <p class="sub" style="margin-top:40px;">Decheng Wang &nbsp;|&nbsp; Shanghai Sanlin High School</p>
+    <p class="sub">FlipFocus — zero-install phone flip detection for everyone</p>
+  </div>
+
+</div>
+
+<div class="progress" id="progress">1 / 10</div>
+<button class="notes-toggle" id="notesBtn" onclick="toggleNotes()">📝 讲稿</button>
+<div class="nav">← → 键翻页 &nbsp;|&nbsp; F 全屏</div>
+<div class="notes" id="notesPane"></div>
+
+<script>
+const NOTES = [
+  // Slide 1
+  "各位老师好，我是Decheng Wang，来自上海三林中学。今天介绍FlipFocus——一个基于浏览器传感器的手机翻转行为检测工具。",
+  // Slide 2
+  "你有没有注意过——开始学习或工作前，会习惯性把手机翻成面朝下？这个2秒的动作可能是一种自我调节仪式。但要研究它，面临三个障碍：第一，每次实验得开发App，耗时数周；第二，没有任何专门检测翻转的工具；第三，不同手机传感器差异巨大，固定方案在许多设备上直接失败。",
+  // Slide 3
+  "FlipFocus的核心思路是：把传感器差异从缺陷变成特性。我们在运行时探测设备有哪些传感器，自动选择融合模式。缺失光线传感器？自动降级为仅加速度计——实验不中断。双传感器模式下F1达到0.970。而且零安装，浏览器扫码就能用。",
+  // Slide 4
+  "系统有三个模块：退化引擎负责传感器探测和模式切换；状态机用3秒确认窗口区分有意翻转和随机噪声；实验生态提供从实验设计、材料、问卷到Python分析管线的全流程支持——发一条微信链接就能开始采集，跑完脚本就能出论文图表。",
+  // Slide 5
+  "我们做了真实场景验证：4名被试、4种条件、25分钟会话。拿到了首批完整传感器数组——14,981个采样点。最意外的发现是P2：他被要求保持手机面朝上，却自发翻了6次。其中一次只持续4.9秒——他立刻意识到'不对，我应该面朝上'并翻回来。这说明翻转行为有很强的习惯性，指导语压不住。",
+  // Slide 6
+  "自评问卷也给出了有意思的结果。主动翻转条件专注度中位数最高，面朝上最低。关键是对比：实验员帮翻和面朝上差异不大——只有自己动手翻，专注体验才明显更好。自评和客观正确率的相关系数达到0.771，问卷效度可靠。",
+  // Slide 7
+  "跟已有工具相比：PIEL Survey需要安装App，浏览器传感器研究不检测翻转，实验室研究缺乏生态效度。FlipFocus是唯一在零安装、传感器自适应、翻转检测、实验配套四个维度上全部提供支持的平台。",
+  // Slide 8
+  "四项贡献：自适应退化策略、3秒确认状态机、完整实验生态、以及真实场景验证中r=0.771的效度证据和自发翻转的行为发现。",
+  // Slide 9
+  "一句话总结：FlipFocus把移动HCI实验的门槛从'开发一个App'降到了'发送一条链接'。代码、材料、管线全部开源——从高中生到专业研究者都可以用。",
+  // Slide 10
+  "谢谢！欢迎提问。"
+];
+
+let current = 0;
+const total = document.querySelectorAll('.slide').length;
+
+function show(i) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.slide')[i].classList.add('active');
+  document.getElementById('progress').textContent = `${i+1} / ${total}`;
+  document.getElementById('notesPane').textContent = NOTES[i] || '';
+  current = i;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); show(Math.min(current+1, total-1)); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); show(Math.max(current-1, 0)); }
+  if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+
+function toggleNotes() {
+  document.getElementById('notesPane').classList.toggle('show');
+}
+
+show(0);
+</script>
+</body>
+</html>

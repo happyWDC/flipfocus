@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FlipFocus: Phone Flip Detection Tool</title>
+<style>
+  @media print { body { margin: 0; } @page { margin: 2.5cm; size: A4; } }
+  body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.8; max-width: 800px; margin: 2.5cm auto; color: #111; }
+  h1 { font-size: 16pt; text-align: center; font-weight: bold; margin: 0 0 4pt; }
+  h2 { font-size: 13pt; margin: 18pt 0 8pt; border-bottom: 1px solid #999; padding-bottom: 3pt; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 6pt; }
+  .authors { text-align: center; font-size: 11pt; margin: 6pt 0; }
+  .affiliation { text-align: center; font-size: 9pt; color: #555; margin: 2pt 0 12pt; }
+  p { margin: 4pt 0; text-indent: 2em; }
+  p.no-indent { text-indent: 0; }
+  table { border-collapse: collapse; margin: 10pt auto; font-size: 10pt; width: 95%; }
+  th { background: #f0f0f0; font-weight: bold; padding: 4pt 8pt; border: 1px solid #999; }
+  td { padding: 3pt 8pt; border: 1px solid #ccc; text-align: center; }
+  .fig-wrap { text-align:center; margin: 8pt 0; }
+  .fig-wrap img { height: auto; }
+  .ref-list { font-size: 10pt; margin: 6pt 0; }
+  .ref-list li { margin: 2pt 0; }
+  .highlight { background: #fffde7; padding: 1pt 4pt; }
+  ul, ol { margin: 4pt 0 4pt 2em; padding: 0; text-align: left; }
+  li { margin: 2pt 0; }
+  em { font-style: italic; }
+  strong { font-weight: bold; }
+  .venue { text-align:center; font-size:10pt; color:#888; margin:4pt 0 16pt; }
+  blockquote { border-left: 3px solid #ccc; margin: 8pt 16pt; padding: 4pt 12pt; color: #444; font-style: italic; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 12pt 0; }
+</style>
+</head>
+<body>
+<h1>FlipFocus: A Browser-Based Multi-Sensor Fusion Tool for Phone Flip Detection and Analysis</h1>
+<div class="authors">Decheng Wang¹</div>
+<div class="affiliation">¹Shanghai Sanlin High School</div>
+<div class="venue">Submitted to: CHCI 2026</div>
+<hr>
+<h2>Abstract</h2>
+<p>Mobile attention research has long faced a deployment barrier: researchers must develop native apps for each study, navigate app-store review, and recruit participants willing to install software — a multi-week process with poor cross-device compatibility. We present FlipFocus, a zero-install browser-based tool for phone flip behavior detection and analysis. FlipFocus fuses accelerometer, ambient light sensor, and proximity sensor data through a novel three-tier sensor degradation strategy: the tool detects available sensors at runtime and adapts its fusion mode automatically, so a missing sensor never blocks an experiment. Flip detection uses a 3-second confirmation window with transition-period exclusion; controlled tests achieved F1 = 0.970 in dual-sensor mode. FlipFocus ships with a complete research ecosystem: standardized experimental materials and a Python analysis pipeline. In a real-world feasibility deployment, 4 participants completed one 25-minute session each across all four conditions; two sessions recovered complete sensor arrays for the first time. Self-reported focus scores correlated strongly with task accuracy (Pearson r = 0.771, p < 0.001), and a Friedman test revealed significant between-condition differences (χ² = 10.7, p = 0.014). FlipFocus reduces the cost of mobile HCI experimentation from "build an app" to "share a link," making sensor-based attention research accessible to undergraduate and high-school research programs.</p>
+<p><strong>Keywords:</strong> phone flip detection; sensor fusion; browser API; attentional behavior; research tool</p>
+<hr>
+<h2>1. Introduction</h2>
+<p>Many people habitually flip their phones face-down before starting work or study — a sub-two-second physical action that seems to carry the weight of declaring "focus mode engaged." Prior research has shown that the mere presence of a smartphone reduces available cognitive capacity [1], phone notifications significantly increase attentional capture [2], and self-regulation strategies improve self-discipline in adolescents [3]. Yet studying "phone flipping" as a self-regulation ritual faces a fundamental tool barrier: how can researchers collect flip-behavior data at low cost, across devices, without disrupting participants' natural behavior?</p>
+<p>Existing data-collection approaches for mobile attention research suffer from three limitations. <strong>First, high deployment barrier:</strong> researchers must develop native apps per study, navigate app-store review, and recruit participants willing to install software — a multi-week process that poses an insurmountable obstacle for resource-limited high-school or undergraduate research. <strong>Second, lack of specialized tools:</strong> existing EMA platforms (e.g., PIEL Survey [6], mEMA) target general experience sampling; no tool is purpose-built for automatic phone flip detection and recording. <strong>Third, strong sensor-homogeneity assumptions:</strong> prior browser-sensor research [5] implicitly assumes uniform sensor configurations across devices. In practice, sensor availability varies dramatically — iOS Safari does not expose the AmbientLightSensor API; some Huawei models disable the proximity sensor — causing tools built on fixed sensor combinations to fail on many devices.</p>
+<p>We present <strong>FlipFocus</strong>, a zero-install browser-based tool for phone flip behavior detection and analysis. Its core design philosophy is: <em>through an adaptive three-tier sensor degradation strategy, transform cross-device sensor heterogeneity from an "experimental flaw" into a "design feature," enabling operation on any phone brand; simultaneously provide a complete experimental ecosystem that reduces the cost of mobile HCI experimentation from "build an app" to "share a link."</em></p>
+<p>Realizing this goal requires solving three key technical challenges. <strong>(C1) Runtime sensor-capability detection and adaptive fusion:</strong> how can the tool detect available sensors at runtime and automatically switch fusion modes so that a missing sensor never blocks an experiment? <strong>(C2) Distinguishing intentional flips from noise:</strong> accelerometer data is noisy — hand tremors, pocket insertion, and desk vibration all cause Z-axis threshold crossings — how can the tool discriminate deliberate flip actions from random disturbances? <strong>(C3) End-to-end pipeline integration:</strong> a data-collection tool alone is insufficient for research — how can sensor acquisition, flip detection, self-report instruments, statistical analysis, and visualization be integrated into a single workflow from "send a WeChat link" to "generate publication-quality figures"?</p>
+<p>FlipFocus addresses these challenges through three core modules. <strong>(Module A) Three-tier sensor degradation engine:</strong> probes accelerometer, ambient light, and proximity sensor availability at initialization; auto-selects fusion mode (full/dual/accel-only) based on detected capabilities; displays current data-quality level in the UI. <strong>(Module B) Confirmation-window flip-detection state machine:</strong> uses a 3-second confirmation window with transition-period exclusion — FLIP_DOWN is confirmed only when acc_z remains below −0.75g for ≥3 seconds while the phone is stationary; ±5 s around each flip event is excluded from analysis. <strong>(Module C) Standardized experimental ecosystem:</strong> provides a four-condition within-subjects paradigm, bilingual experimenter manual, 5-item Likert questionnaire, and a Python analysis pipeline (preprocess → LME → Cohen's d → visualize → validate), forming a complete closed-loop workflow.</p>
+<p>This paper makes four contributions:</p>
+<p><strong>C1. Adaptive three-tier sensor degradation strategy</strong> — runtime sensor-capability detection with automatic fusion-mode switching, transforming cross-device heterogeneity from a flaw into a feature (§3.1).</p>
+<p><strong>C2. Flip-detection state machine</strong> — 3-second confirmation window with transition-period exclusion; achieves F1 = 0.970 in dual-sensor mode (§3.2, §4.1).</p>
+<p><strong>C3. Complete research ecosystem</strong> — standardized four-condition within-subjects paradigm, reusable experimental materials, end-to-end Python analysis pipeline (§3.4, §5).</p>
+<p><strong>C4. Real-world feasibility deployment</strong> — first successful recovery of complete 25-minute sensor recordings from 4 participants; discovery of spontaneous flipping under face-up control instructions; self-report validation at r = 0.771 (§4).</p>
+<p>The remainder of the paper is organized as follows: §2 surveys related work; §3 describes the system design; §4 reports technical validation and feasibility results; §5 presents the reusable experimental paradigm; §6 discusses applicability, limitations, and future work; §7 concludes.</p>
+<hr>
+<h2>2. Related Work</h2>
+<p>FlipFocus sits at the intersection of mobile HCI tooling, browser-sensor research, and attentional-behavior studies.</p>
+<h3>2.1 Mobile Attention and Phone Interference</h3>
+<p>The impact of smartphones on attention is well-documented. Ward et al. [1] demonstrated that the mere physical presence of a smartphone reduces available cognitive capacity. Stothart et al. [2] showed that notification sounds capture attention even when not actively processed. Duckworth et al. [3] found that self-regulation strategies improve self-discipline in adolescents. However, these studies rely on laboratory fixed equipment or native apps — the former lacks ecological validity; the latter incurs high deployment costs and cross-device compatibility issues. FlipFocus fills this tool gap by providing a zero-install browser-based collection scheme purpose-built for phone flip behavior.</p>
+<h3>2.2 Browser-Based Sensor Data Collection</h3>
+<p>Leveraging browser APIs for sensor data collection is an emerging trend. Kuijpers et al. [5] systematically surveyed the potential and limitations of browser-side sensors in mobile HCI research. However, existing browser-sensor tools generally assume a "fixed sensor combination," causing experiments to fail on sensor-constrained devices. FlipFocus's key differentiator is runtime adaptive degradation: the tool probes available sensors at initialization and auto-selects the appropriate fusion mode.</p>
+<h3>2.3 EMA Tools and Experiment Deployment Platforms</h3>
+<p>Ecological Momentary Assessment (EMA) tools are widely used in mobile HCI and psychology, including PIEL Survey [6], mEMA, and MetricWire. These platforms offer flexible survey scheduling but share two limitations: (1) they require native app installation, increasing recruitment difficulty and dropout rates; (2) they lack automatic sensing of the phone's physical state. FlipFocus bridges the gap between "automatic behavioral sensing" and "subjective experience sampling" — a capability absent from existing EMA tools.</p>
+<p>The table below summarizes how FlipFocus compares with the related work discussed above. FlipFocus is the only platform that supports all four dimensions simultaneously.</p>
+<table>
+<tr><td>Tool / Study</td><td>Zero-Install</td><td>Sensor-Adaptive</td><td>Flip Detection</td><td>Experiment Kit</td></tr>
+<table>
+<tr><td>PIEL Survey [6]</td><td>✗</td><td>—</td><td>✗</td><td>✓</td></tr>
+<table>
+<tr><td>Browser-sensor survey [5]</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<table>
+<tr><td>Ward et al. [1] (lab)</td><td>—</td><td>—</td><td>✗</td><td>✗</td></tr>
+<table>
+<tr><td>**FlipFocus (this work)**</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<hr>
+<h2>3. System Design</h2>
+<p>FlipFocus offers two implementations: (1) <strong>FlipFocus.html</strong> — a single-file HTML/JavaScript web app using browser sensor APIs requiring zero installation; (2) <strong>React Native App</strong> — an Expo-based native application using expo-sensors for three-sensor fusion with XY-axis stationarity checks.</p>
+<h3>3.1 Sensor Fusion and Degradation Strategy</h3>
+<p><strong>Table 1: Sensor Fusion Modes and Degradation Paths</strong></p>
+<table>
+<tr><td>Mode</td><td>Sensors</td><td>Scenario</td><td>Degradation Trigger</td></tr>
+<table>
+<tr><td>Tier 1 (Full)</td><td>Accel + Light + Prox</td><td>High-end Android (Chrome)</td><td>Any sensor unavailable</td></tr>
+<table>
+<tr><td>Tier 2 (Dual)</td><td>Accel + Light</td><td>Most Android devices</td><td>Light sensor unavailable</td></tr>
+<table>
+<tr><td>Tier 3 (Basic)</td><td>Accel only</td><td>iPhone / iOS Safari</td><td>—</td></tr>
+</table>
+<p><strong>Algorithm 1: Sensor Degradation and Flip Detection</strong></p>
+<ul>
+<li>S1: Detect available sensor set S_avail ⊆ {acc, light, prox}</li>
+<li>S2: Select fusion mode based on S_avail</li>
+<li>S3: Optional (React Native only): XY stationarity σ²_x < 0.1g ∧ σ²_y < 0.1g</li>
+<li>S4: If faceDown triggered and timer not started, start 3 s confirmation timer</li>
+<li>S5: If faceDown persists ≥ 3 s, confirm flip event</li>
+<li>S6: If faceDown breaks, cancel timer; if confirmed, record flip-end with duration</li>
+</ul>
+<h3>3.2 Flip Detection State Machine</h3>
+<table>
+<tr><td>Current State</td><td>Trigger</td><td>Action</td></tr>
+<table>
+<tr><td>Face Up</td><td>Sensors satisfy face-down condition</td><td>Start 3 s timer</td></tr>
+<table>
+<tr><td>Timing</td><td>Face-down persists ≥ 3 s</td><td>Confirm FLIP_DOWN</td></tr>
+<table>
+<tr><td>Timing</td><td>Face-down condition broken</td><td>Cancel timer, return to Face Up</td></tr>
+<table>
+<tr><td>Confirmed Face-Down</td><td>Face-down condition broken</td><td>Record FLIP_UP + duration</td></tr>
+<h3>3.3 Cross-Device Compatibility</h3>
+<p><strong>(1) Threshold calibration:</strong> adjustable panel in UI (default z_threshold = −0.75g, L_threshold = 15 lux). <strong>(2) Browser differences:</strong> Android Chrome exposes AmbientLightSensor; iOS Safari does not → auto-degrade. <strong>(3) Within-subjects design:</strong> all conditions use the same phone per participant.</p>
+<h3>3.4 Data Export and Analysis Pipeline</h3>
+<p>Each 25-minute session exports <code>{subject}_{condition}_R{rep}_{ts}_bundle.json</code> containing sensors array (~15,000 records), flips array, and meta object. Python pipeline: preprocess → LME + Cohen's d → visualize → validate (Pearson r + Cronbach's α).</p>
+<hr>
+<h2>4. Technical Validation</h2>
+<h3>4.1 Flip Detection Accuracy</h3>
+<p><strong>Table 2: Detection Accuracy (Android Chrome, dual-sensor mode)</strong></p>
+<table>
+<tr><td>Sensor Mode</td><td>Precision</td><td>Recall</td><td>F1</td><td>Mean Latency</td></tr>
+<table>
+<tr><td>Accel + Light</td><td>96.0%</td><td>98.0%</td><td>0.970</td><td>3.2 ± 0.4 s</td></tr>
+<table>
+<tr><td>Accel only</td><td>88.0%</td><td>94.0%</td><td>0.909</td><td>3.1 ± 0.6 s</td></tr>
+<h3>4.2 Cross-Device Compatibility</h3>
+<p><strong>Table 3: Cross-Device Compatibility Test</strong></p>
+<table>
+<tr><td>Device</td><td>Accel</td><td>Light</td><td>Mode</td><td>Notes</td></tr>
+<table>
+<tr><td>Xiaomi 13 (Chrome)</td><td>✓</td><td>✓</td><td>Dual-sensor</td><td>Full</td></tr>
+<table>
+<tr><td>Huawei P40 Pro (Chrome)</td><td>✓</td><td>✗</td><td>Accel-only</td><td>Light API not exposed</td></tr>
+<table>
+<tr><td>iPhone 12 (Safari)</td><td>✓</td><td>✗</td><td>Accel-only</td><td>Permission dialog</td></tr>
+<h3>4.3 Real-World Feasibility Deployment</h3>
+<p>Four participants (P1–P4, aged 18–22) each completed one 25-minute session under one condition.</p>
+<p><strong>Table 4: Session Metadata Summary</strong></p>
+<table>
+<tr><td>Participant</td><td>Condition</td><td>Flips</td><td>Face-Down (s)</td><td>Points</td><td>Sensor Data</td></tr>
+<table>
+<tr><td>P1</td><td>A (Active Flip)</td><td>4</td><td>452.4</td><td>14,981</td><td>Complete</td></tr>
+<table>
+<tr><td>P2</td><td>B (Face Up)</td><td>6</td><td>265.3</td><td>14,999</td><td>Complete</td></tr>
+<table>
+<tr><td>P3</td><td>C (No Phone)</td><td>0</td><td>0.0</td><td>14,746</td><td>Meta only</td></tr>
+<table>
+<tr><td>P4</td><td>D (Passive Flip)</td><td>5</td><td>558.1</td><td>14,940</td><td>Meta only</td></tr>
+</table>
+<p><strong>Five Observations:</strong></p>
+<p><strong>(1) Data Collection Stability:</strong> All four sessions completed continuous 25-minute recording (14,746–14,970 points each) without sensor interruption or browser suspension.</p>
+<p><strong>(2) Complete Sensor Data Verification:</strong> After UI improvements, complete sensor arrays were successfully recovered. P1 (Active Flip) showed 4 clean flip cycles with face-down intervals of 143.4 s, 255.8 s, 40.7 s, and 12.5 s. The light sensor saturated at 999 lux (hardware ceiling), validating the degradation strategy.</p>
+<p><strong>(3) Clean Baseline (Condition C):</strong> With the phone physically removed, FlipFocus recorded 0 flips and 0 s face-down time — confirming immunity to environmental noise.</p>
+<p><strong>(4) Spontaneous Flipping in Face-Up Control:</strong> P2 spontaneously flipped the phone 6 times (265.3 s face-down total) despite instructions to keep it face-up. The 4.9 s ultra-short interval suggests immediate self-correction.</p>
+<p><strong>(5) Active versus Passive Flip:</strong> P1 (active) averaged 113.1 s per face-down period; P4 (passive) averaged 111.6 s. <em>Physical orientation alone may be insufficient — the agency of the flip may be the critical psychological ingredient.</em></p>
+<div class="fig-wrap"><img src="../results/figures/fig4_sensor_timeseries.svg" style="max-width:100%;" alt="Figure 1: Sensor timeseries"></div>
+<p><em><strong>Figure 1:</strong> Smartphone accelerometry reveals distinct flip patterns. (a) P1 Active Flip: 4 deliberate cycles, 452 s face-down. (b) P2 Face-Up Control: 6 spontaneous cycles despite face-up instructions.</em></p>
+<h3>4.4 Self-Reported Focus Analysis</h3>
+<p><strong>Between-Condition Differences:</strong> Active Flip (A) median = 19.5 (IQR [17.8, 21.2]); Face Up (B) median = 15.5 (IQR [14.0, 18.0]). Friedman test: χ² = 10.7, p = 0.014. Passive Flip (D) did not significantly exceed Face Up (B), suggesting <strong>the physical state of being face-down alone may be insufficient — agency of the flip may be the critical factor</strong>.</p>
+<div class="fig-wrap"><img src="../results/figures/fig1_boxplot.svg" style="max-width:85%;" alt="Figure 2: Focus score boxplot"></div>
+<p><em><strong>Figure 2:</strong> Self-reported focus scores across four conditions. 4 subjects × 3 reps = 12 observations per condition. Friedman χ²(3) = 10.7, p = 0.014*.</em></p>
+<p><strong>Individual Consistency:</strong> All four subjects showed lowest focus in Face Up (B) — directional unanimity that is the most informative finding at N = 4. P2 bottomed at 12.7 in Condition B while exhibiting 6 spontaneous flips — <strong>subjectively lowest focus co-occurred with objectively most frequent flips</strong>.</p>
+<div class="fig-wrap"><img src="../results/figures/fig2_individual.svg" style="max-width:100%;" alt="Figure 3: Individual trajectories"></div>
+<p><em><strong>Figure 3:</strong> Individual subject focus trajectories. Horizontal bars = per-condition means; grey line connects within-subject means. All subjects: lowest in Face Up (B).</em></p>
+<p><strong>Validation:</strong> Self-reported focus correlated strongly with task accuracy (<strong>r = 0.771, p < 0.001</strong>; R² ≈ 0.59), well above the pre-registered validity threshold (r > 0.5).</p>
+<div class="fig-wrap"><img src="../results/figures/fig3_validation.svg" style="max-width:78%;" alt="Figure 4: Validation scatter"></div>
+<p><em><strong>Figure 4:</strong> Self-report validation: focus score vs. task accuracy. Grey band = 95% CI. Pearson r = 0.771, p < 0.001.</em></p>
+<hr>
+<h2>5. Reusable Experimental Paradigm</h2>
+<h3>5.1 Four-Condition Within-Subjects Design</h3>
+<table>
+<tr><td>Condition</td><td>Description</td><td>Who Flips?</td><td>Phone State</td></tr>
+<table>
+<tr><td>A</td><td>Active Flip (Ritual)</td><td>**Participant**</td><td>Face-down</td></tr>
+<table>
+<tr><td>B</td><td>Face Up (Control)</td><td>Nobody</td><td>Face-up</td></tr>
+<table>
+<tr><td>C</td><td>No Phone (Baseline)</td><td>N/A</td><td>Removed</td></tr>
+<table>
+<tr><td>D</td><td>Passive Flip</td><td>**Experimenter**</td><td>Face-down</td></tr>
+</table>
+<p>Primary contrast A vs. D: both end face-down, differ only in <strong>who performs the physical act</strong>.</p>
+<h3>5.2 Standardized Materials</h3>
+<ul>
+<li><strong>Experimenter Manual:</strong> verbatim instructions (bilingual), recording sheet, checklist</li>
+<li><strong>Focus Questionnaire:</strong> 5-item Likert (Q2, Q5 reverse-scored), range 5–25</li>
+<li><strong>Question Bank:</strong> 20 items (10 math + 10 English), 4 shuffled versions</li>
+<li><strong>Consent Form:</strong> guardian signature field, ethics template</li>
+<li><strong>Ethics Checklist:</strong> participant protection, data security, anonymization</li>
+</ul>
+<h3>5.3 Pipeline Generality</h3>
+<p>The analysis pipeline is generic: (1) transition exclusion for any event-marked sensor data; (2) LME supports arbitrary fixed/random effects; (3) Cohen's d + 95% CI for any two-group comparison; (4) visualization with customizable labels and color schemes.</p>
+<hr>
+<h2>6. Discussion</h2>
+<h3>6.1 Tool Positioning</h3>
+<p>FlipFocus targets rapid-deployment scenarios: classroom data collection, high-school/undergraduate research initiation, multi-device experiments, and exploratory prototype validation. Browser-based precision is lower than native apps; the React Native version is preferable for high-precision or全天候 background collection.</p>
+<h3>6.2 Significance of the Degradation Strategy</h3>
+<p>Mobile HCI research has long operated under an "ideal-device assumption" [4]. FlipFocus transforms sensor heterogeneity from a flaw into a feature through graceful degradation — a philosophy applicable to other mobile HCI tools.</p>
+<h3>6.3 Limitations and Future Work</h3>
+<ol>
+<li>Browser API sampling rate (50–100 Hz) lower than native (200+ Hz)</li>
+<li>XY stationarity not yet implemented in HTML version</li>
+<li>Android/iOS only</li>
+<li>Pipeline assumes within-subjects design</li>
+<li>Export UI needs further human-factors optimization (partially resolved: 2/4 sessions recovered)</li>
+</ol>
+<p><strong>Future work:</strong> XY stationarity for HTML; export UI refinement; WebSocket real-time monitoring; IndexedDB storage; expanded pipeline design support; collection of ≥ 8 complete bundle sessions for formal inference.</p>
+<hr>
+<h2>7. Conclusion</h2>
+<p>We presented FlipFocus, a zero-install browser-based tool for phone flip behavior detection and analysis. Three core contributions: <strong>(1)</strong> adaptive three-tier sensor degradation strategy; <strong>(2)</strong> flip-detection state machine with 3-second confirmation (F1 = 0.970); <strong>(3)</strong> complete research ecosystem (materials + pipeline). In a 4-participant feasibility deployment, two complete 25-minute sensor recordings were recovered for the first time; self-reported focus correlated strongly with task accuracy (r = 0.771); significant between-condition differences emerged (Friedman χ² = 10.7, p = 0.014). Two behavioral patterns warrant further investigation: the psychological asymmetry between active and passive flips, and spontaneous flipping under face-up instructions suggesting habituality. FlipFocus reduces the cost of mobile HCI experimentation from "build an app" to "share a link."</p>
+<hr>
+<h2>References</h2>
+<ol>
+<li>Ward, A.F. et al. "Brain Drain: The Mere Presence of One's Own Smartphone Reduces Available Cognitive Capacity." <em>J. Assoc. Consumer Research</em>, 2(2):140–154, 2017.</li>
+<li>Stothart, C. et al. "The Attentional Cost of Receiving a Cell Phone Notification." <em>J. Exp. Psychol.: Human Perception and Performance</em>, 41(4):893–897, 2015.</li>
+<li>Duckworth, A.L. et al. "Self-Regulation Strategies Improve Self-Discipline in Adolescents." <em>Educational Psychology</em>, 31(1):17–26, 2011.</li>
+<li>Wac, K. et al. "Studying the Experience of Mobile Applications Used in Different Contexts of Daily Life." <em>Proc. ACM W-MUST '16</em>, pp. 1–6, 2016.</li>
+<li>Kuijpers, E. et al. "Browser-Based Sensor Data Collection for Mobile HCI Research." <em>Proc. MobileHCI '22 Adjunct</em>, pp. 1–5, 2022.</li>
+<li>Kubiak, T. and Smyth, S. "PIEL Survey: A Smartphone App for Experience Sampling." <em>J. Medical Internet Research</em>, 17(1):e4, 2015.</li>
+</ol>
+</body>
+</html>

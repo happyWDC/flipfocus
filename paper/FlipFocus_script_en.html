@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FlipFocus — 2-Minute Presentation Script</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Arial", "Helvetica", "Microsoft YaHei", sans-serif; background: #f8f8f6; color: #222; max-width: 720px; margin: 40px auto; padding: 0 24px 60px; line-height: 1.9; }
+  h1 { font-size: 24pt; text-align: center; margin-bottom: 4px; color: #1a1a2e; }
+  .meta { text-align: center; font-size: 11pt; color: #888; margin-bottom: 30px; }
+  .meta span { margin: 0 10px; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 24px 0; }
+  .slide { background: #fff; border-radius: 8px; padding: 24px 28px; margin: 20px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border-left: 4px solid #7B8FA1; }
+  .slide h2 { font-size: 14pt; color: #7B8FA1; margin-bottom: 10px; font-weight: 700; }
+  .slide p { font-size: 13pt; margin: 6px 0; }
+  .slide ul, .slide ol { margin: 6px 0 6px 20px; font-size: 13pt; }
+  .slide li { margin: 4px 0; }
+  .slide .highlight { color: #B8978A; font-weight: bold; }
+  .slide .point { color: #1a1a2e; font-weight: 700; }
+  .footer { text-align: center; font-size: 11pt; color: #aaa; margin-top: 30px; }
+  @media print { body { background: #fff; } .slide { box-shadow: none; border: 1px solid #ddd; } }
+</style>
+</head>
+<body>
+
+<h1>FlipFocus — 2-Minute Presentation Script</h1>
+<div class="meta">
+  <span>Speaker: Decheng Wang</span>
+  <span>|</span>
+  <span>CHCI 2026</span>
+  <span>|</span>
+  <span>~2 min</span>
+</div>
+
+<hr>
+
+<div class="slide">
+  <h2>Slide 1 — Title (5s)</h2>
+  <p>Good morning / afternoon, everyone. I'm Decheng Wang from Shanghai Sanlin High School. Today I'll present FlipFocus — a browser-sensor-based tool for detecting phone-flipping behavior.</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 2 — Motivation (18s)</h2>
+  <p>Have you ever noticed — before studying or starting work, you habitually flip your phone face-down? That 2-second gesture may be a self-regulation ritual.</p>
+  <p>But studying it faces three barriers:</p>
+  <ul>
+    <li><span class="point">First</span>, every experiment requires developing a native app, going through app-store review, and having participants install it — taking weeks. For high-school research, this is simply infeasible.</li>
+    <li><span class="point">Second</span>, no existing tool is purpose-built for detecting phone flips. Current EMA platforms only do survey sampling; they don't track the physical state of the phone.</li>
+    <li><span class="point">Third</span>, phone sensors vary enormously across devices. iOS Safari doesn't expose the ambient-light API; some Huawei devices disable the proximity sensor. A fixed sensor-combination approach breaks outright on a large number of devices.</li>
+  </ul>
+</div>
+
+<div class="slide">
+  <h2>Slide 3 — Core Design Philosophy (15s)</h2>
+  <p>The core idea of FlipFocus: <span class="highlight">turn sensor diversity from a bug into a feature.</span></p>
+  <p>At runtime, it probes which sensors are available on the device and auto-selects a fusion mode. Missing ambient-light sensor? It gracefully degrades to accelerometer-only — the experiment keeps running. The UI shows real-time data quality.</p>
+  <p>In dual-sensor mode, F1 reaches 0.970. And it's zero-install — participants scan a QR code in their browser and start immediately.</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 4 — Three Core Modules (15s)</h2>
+  <p><span class="point">Module A — Degradation Engine:</span> probes sensor availability and auto-switches fusion modes.</p>
+  <p><span class="point">Module B — State Machine:</span> a 3-second confirmation window distinguishes intentional flips from random noise; ±5-second transition periods are excluded; XY-axis stillness is verified.</p>
+  <p><span class="point">Module C — Experiment Ecosystem:</span> four-condition within-subjects design paradigm, standardized material kit, and a Python-based end-to-end analysis pipeline. Send one WeChat link to start data collection; run one script to produce publication-ready figures.</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 5 — Real-World Findings (20s)</h2>
+  <p>We conducted a real-world validation: 4 participants, 4 conditions, 25-minute sessions. We collected the first-ever complete sensor array of this kind — 14,981 sampling points.</p>
+  <p>The most surprising finding involved P2: instructed to keep the phone face-up, he <span class="highlight">spontaneously flipped 6 times</span>, totaling 265 seconds face-down.</p>
+  <p>One of those flips lasted only 4.9 seconds — he immediately realized "wait, I'm supposed to be face-up" and flipped back. This tells us two things:</p>
+  <ol>
+    <li>Flip behavior is strongly habitual — verbal instructions alone cannot suppress it.</li>
+    <li>The 4.9-second self-correction confirms that the instruction was present in the participant's awareness — it just wasn't strong enough.</li>
+  </ol>
+</div>
+
+<div class="slide">
+  <h2>Slide 6 — Self-Reported Focus Analysis (18s)</h2>
+  <p>The self-report questionnaire also yielded interesting results.</p>
+  <p>Median focus score was highest in the Active-Flip condition — 19.5 points. The Face-Up condition scored lowest — 15.5 points. The Friedman test was significant.</p>
+  <p>Key comparison: experimenter-flip and face-up showed little difference — <span class="highlight">only when participants flipped the phone themselves did the focus experience clearly improve.</span> Physical state alone is not enough; the agency of performing the flip may be the critical psychological factor.</p>
+  <p>Validation: self-report scores correlated with objective accuracy at r = 0.771, p &lt; 0.001. The questionnaire successfully captured genuine focus signals, not subjective bias.</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 7 — Comparison with Prior Work (10s)</h2>
+  <p>Compared to existing tools: PIEL Survey requires app installation; browser-sensor studies don't detect flips; lab-based studies lack ecological validity.</p>
+  <p>FlipFocus is the <span class="highlight">only</span> platform that checks all four boxes: zero-install, sensor-adaptive, flip-detection, and experiment-ready.</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 8 — Four Core Contributions (8s)</h2>
+  <ul>
+    <li><span class="point">C1</span>: Adaptive three-tier sensor degradation strategy</li>
+    <li><span class="point">C2</span>: 3-second confirmation-window state machine, F1 = 0.970</li>
+    <li><span class="point">C3</span>: Complete experiment ecosystem</li>
+    <li><span class="point">C4</span>: First complete 25-minute sensor dataset + spontaneous flip behavior discovery + r = 0.771</li>
+  </ul>
+</div>
+
+<div class="slide">
+  <h2>Slide 9 — Summary (8s)</h2>
+  <p>In one sentence: FlipFocus lowers the deployment barrier for mobile HCI experiments from <span class="highlight">"develop an app"</span> to <span class="highlight">"send a link."</span></p>
+  <p>Code, materials, and analysis pipeline are all open-source — usable by everyone from high-schoolers to professional researchers.</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 10 — Acknowledgments (3s)</h2>
+  <p>Thank you! Questions are welcome.</p>
+</div>
+
+<div class="footer">Total: ~120 seconds (2 minutes) &nbsp;|&nbsp; Decheng Wang &nbsp;|&nbsp; CHCI 2026</div>
+
+</body>
+</html>

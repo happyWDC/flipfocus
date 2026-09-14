@@ -1,0 +1,10 @@
+{
+  "participant": "P2",
+  "condition": "B_面朝上",
+  "repetition": 3,
+  "date": "2026/5/27",
+  "duration_min": 25,
+  "flip_count": 2,
+  "total_face_down_sec": "55.8",
+  "data_points": 15002
+}

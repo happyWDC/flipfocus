@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FlipFocus — 手机翻转仪式实验</title>
+<style>
+  :root {
+    --bg: #F5F6FA;
+    --card: #FFFFFF;
+    --accent: #3366FF;
+    --green: #22AA55;
+    --red: #E04444;
+    --orange: #E08830;
+    --text: #1A1D28;
+    --muted: #9095A5;
+    --border: #DDE0E8;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none; -webkit-user-select: none;
+  }
+  .screen { display:none; padding: 24px 20px 100px; max-width: 480px; margin:0 auto; }
+  .screen.active { display:block; }
+
+  /* ── Common ── */
+  .title { font-size: 32px; font-weight: 800; color: var(--accent); text-align: center; letter-spacing: 2px; }
+  .subtitle { font-size: 13px; color: var(--muted); text-align: center; margin: 4px 0 24px; }
+  .card {
+    background: var(--card); border-radius: 16px; padding: 16px;
+    margin-bottom: 12px; border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; }
+  .chip {
+    padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--muted); font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: all .15s;
+  }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cond-btn {
+    display:block; width:100%; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+    font-size: 14px; text-align: left; margin-bottom: 6px; cursor: pointer;
+    transition: all .15s;
+  }
+  .cond-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  .btn {
+    display:block; width:100%; padding: 16px; border-radius: 16px;
+    font-size: 16px; font-weight: 800; text-align: center; cursor: pointer;
+    border: none; margin-top: 12px; transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); font-weight: 400; margin-top: 8px; }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    position:fixed; bottom:0; left:0; right:0; background: var(--card);
+    border-top: 1px solid var(--border); display:flex; padding: 8px 16px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom)); z-index: 100;
+  }
+  .nav-item {
+    flex:1; text-align:center; padding: 8px 4px; border-radius: 10px;
+    cursor: pointer; transition: all .15s; color: var(--muted); font-size: 12px;
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-icon { font-size: 20px; display:block; margin-bottom: 2px; }
+
+  /* ── Session ── */
+  .status-badge {
+    display:inline-block; padding: 8px 20px; border-radius: 24px;
+    font-size: 14px; font-weight: 700; text-align: center; margin: 0 auto 12px;
+  }
+  .status-up { background: #FFF0F0; border: 1px solid var(--red); color: var(--text); }
+  .status-down { background: #E8F8EE; border: 1px solid var(--green); color: var(--text); }
+  .badge-wrap { text-align: center; }
+  .timer { font-size: 64px; font-weight: 900; text-align: center; font-variant-numeric: tabular-nums; margin-bottom: 4px; }
+  .progress-wrap { height:4px; background:var(--border); border-radius:2px; margin:8px 0 12px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--accent); border-radius:2px; transition: width 1s linear; }
+  .info-row { display:flex; justify-content:space-around; margin-bottom:12px; }
+  .info-row span { color:var(--muted); font-size:13px; }
+  .sensor-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:12px; text-align:center; }
+  .sensor-val { font-size: 20px; font-weight: 700; margin-top:4px; }
+  .sensor-val.on { color: var(--green); }
+  .stats-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:12px; text-align:center; }
+  .stat-num { font-size: 22px; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 10px; color: var(--muted); margin-top:2px; }
+  .btn-green { background: var(--green); color: #fff; }
+
+  /* ── Permission ── */
+  .perm-box {
+    background: var(--card); border: 2px solid var(--accent); border-radius: 16px;
+    padding: 24px; text-align: center; margin-bottom: 16px;
+  }
+  .perm-box h3 { margin-bottom: 8px; }
+  .perm-box p { color: var(--muted); font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+
+  /* ── Guide ── */
+  .guide .step-num {
+    display:inline-block; width:28px; height:28px; border-radius:14px;
+    background: var(--accent); color: #fff; text-align: center; line-height: 28px;
+    font-size: 14px; font-weight: 800; margin-right: 10px; flex-shrink: 0;
+  }
+  .guide .step-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .guide .step-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .guide .step-desc strong { color: var(--text); }
+  .guide .highlight { background: #E8F8EE; border: 1px solid var(--green); }
+  .guide .highlight-red { background: #FFF0F0; border: 1px solid var(--red); }
+  .guide .highlight-orange { background: #FFF6EC; border: 1px solid var(--orange); }
+  table.guide-tbl { width:100%; border-collapse:collapse; font-size:12px; margin:8px 0; }
+  table.guide-tbl th { color: var(--muted); font-weight:600; text-align:left; padding:4px 8px; border-bottom:1px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:1px; }
+  table.guide-tbl td { padding:6px 8px; border-bottom:1px solid var(--border); color: var(--text); vertical-align:top; }
+  table.guide-tbl td.cond-a { color: #157A3A; font-weight:700; }
+  table.guide-tbl td.cond-d { color: #B87020; font-weight:700; }
+
+  /* ── Toast ── */
+  .toast {
+    position:fixed; top:16px; left:16px; right:16px;
+    padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    text-align: center; z-index: 999; display:none;
+  }
+  .toast.ok { background: #E8F8EE; color: #157A3A; border: 1px solid var(--green); }
+  .toast.warn { background: #FFF6EC; color: #B87020; border: 1px solid var(--orange); }
+
+  /* ── Checklist ── */
+  .cl-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+  .cl-box { width:22px; height:22px; border-radius:6px; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+  .cl-box.done { background: var(--green); border-color: var(--green); }
+  .cl-box.done::after { content:'✓'; color:#000; font-weight:800; font-size:14px; }
+  .cl-text { font-size:13px; color: var(--text); }
+  .cl-text.done { color: var(--muted); text-decoration:line-through; }
+</style>
+</head>
+<body>
+
+<!-- ═══ Toast ═══ -->
+<div id="toast" class="toast"></div>
+
+<!-- ═══ Screen 0: Permission Request (iOS) ═══ -->
+<div id="screen-perm" class="screen active">
+  <div style="padding-top:60px">
+    <div class="title">FlipFocus</div>
+    <div class="subtitle">注意力仪式研究 · 传感器采集</div>
+    <div class="perm-box">
+      <h3>📱 需要传感器权限</h3>
+      <p>本实验需要访问设备的运动传感器和光线传感器来检测手机翻转状态。<br>不收集任何个人身份信息、位置或通信内容。</p>
+      <p style="color:#157A3A;font-size:12px">所有数据仅存储在浏览器本地，不上传云端</p>
+      <button class="btn btn-primary" onclick="requestPermission()">授权并开始</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- Screen 1: 实验指南 (Guide)                          -->
+<!-- ════════════════════════════════════════════════════ -->
+<div id="screen-guide" class="screen guide">
+  <div class="title">FlipFocus</div>
+  <div class="subtitle">实验操作指南 · 一步一步跟着做</div>
+
+  <!-- 流程概览 -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-around;text-align:center">
+      <div><div style="font-size:28px">📋</div><div style="font-size:11px;color:var(--muted)">1.准备</div></div>
+      <div style="color:var(--muted)">→</div>
+      <div><div style="font-size:28px">📱</div><div style="font-size:11px;color:var(--muted)">2.校准</div></div>
+      <div style="color:var(--muted)">→</div>
+      <div><div style="font-size:28px">⏱️</div><div style="font-size:11px;color:var(--muted)">3.采集</div></div>
+      <div style="color:var(--muted)">→</div>
+      <div><div style="font-size:28px">📊</div><div style="font-size:11px;color:var(--muted)">4.导出</div></div>
+      <div style="color:var(--muted)">→</div>
+      <div><div style="font-size:28px">💻</div><div style="font-size:11px;color:var(--muted)">5.分析</div></div>
+    </div>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start">
+      <span class="step-num">1</span>
+      <div>
+        <div class="step-title">打开采集工具（10 秒）</div>
+        <div class="step-desc">
+          用手机浏览器打开 <strong>FlipFocus.html</strong> 这个文件。<br>
+          <span style="color:var(--orange)">iOS</span>：必须用 <strong>Safari</strong> 打开<br>
+          <span style="color:var(--green)">Android</span>：Chrome / Edge / 自带浏览器都可以<br>
+          如弹出权限请求，点<strong>「授权」</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start">
+      <span class="step-num">2</span>
+      <div>
+        <div class="step-title">校准传感器阈值（1 分钟）</div>
+        <div class="step-desc">
+          切换到<strong>「采集」</strong>标签，把手机<strong>面朝下放在桌上</strong>：<br>
+          · accZ 应显示约 <strong>-0.9 ~ -1.0g</strong>（若偏差大，调 Z 阈值）<br>
+          · 光线值应 <strong>&lt; 10 lux</strong>（若偏高，调光线阈值）<br>
+          <span style="color:var(--red)">⚠ 每台手机第一次用都要校准！</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start">
+      <span class="step-num">3</span>
+      <div>
+        <div class="step-title">开始实验片段（27 分钟/个）</div>
+        <div class="step-desc">
+          在采集页面设置：<strong>被试编号</strong> + <strong>实验条件</strong> + <strong>第1/2次</strong>，<br>
+          然后点「开始采集」，倒计时 25 分钟后自动结束。<br>
+          <span style="color:var(--muted)">每人 4 个条件 × 2 次重复 = 8 个片段</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 conditions table -->
+  <div class="card highlight">
+    <div class="label">四种实验条件（每人全做，每种 2 次 = 每人 8 个片段，4人共 32 片段）</div>
+    <table class="guide-tbl">
+      <tr><th>条件</th><th>谁翻手机？</th><th>手机在哪？</th><th>指导语</th></tr>
+      <tr>
+        <td class="cond-a">A 主动翻转</td>
+        <td><strong>学生自己</strong></td>
+        <td>面朝下</td>
+        <td style="font-size:11px">"请你自己把手机翻过来，然后开始做题"</td>
+      </tr>
+      <tr>
+        <td>B 面朝上</td>
+        <td>不翻</td>
+        <td>面朝上</td>
+        <td style="font-size:11px">"手机就放这里，你开始做题"</td>
+      </tr>
+      <tr>
+        <td>C 无手机</td>
+        <td>-</td>
+        <td>拿走</td>
+        <td style="font-size:11px">"我把手机拿到另一个房间去"</td>
+      </tr>
+      <tr>
+        <td class="cond-d">D 被动翻转</td>
+        <td><strong>实验员帮翻</strong></td>
+        <td>面朝下</td>
+        <td style="font-size:11px">"我来帮你翻，好了，你开始做题"</td>
+      </tr>
+    </table>
+    <div style="font-size:12px;color:var(--orange);margin-top:8px;text-align:center">
+      ⭐ A 和 D 的唯一区别是"谁动手"——这是整个研究的核心问题
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start">
+      <span class="step-num">4</span>
+      <div>
+        <div class="step-title">导出数据</div>
+        <div class="step-desc">
+          时间到后震动提醒，点<strong>「导出数据」</strong>下载 1 个文件：<br>
+          <code style="background:var(--border);padding:1px 6px;border-radius:4px;font-size:11px">xxx_bundle.json</code> 包含传感器数据 + 翻转事件 + 实验信息<br>
+          <span style="font-size:11px;color:var(--muted)">（所有数据打包在一个文件里，微信直接发给实验员即可）</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start">
+      <span class="step-num">5</span>
+      <div>
+        <div class="step-title">分析数据</div>
+        <div class="step-desc">
+          全部 32 个片段采集完后，把 data 文件夹拷到电脑：<br>
+          <code style="background:var(--border);padding:2px 8px;border-radius:4px;font-size:11px;display:block;margin:6px 0">cd analysis<br>
+          pip install -r requirements.txt<br>
+          python 01_preprocess.py --data-dir ../data/<br>
+          python 02_analysis.py<br>
+          python 03_visualize.py</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checklist -->
+  <div class="card">
+    <div class="label">实验进度检查清单</div>
+    <div id="checklist"></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">点击勾选，进度保存在浏览器中</div>
+  </div>
+
+  <!-- Key reminders -->
+  <div class="card highlight-red">
+    <div class="step-desc" style="color:var(--text)">
+      <strong>⚠ 关键提醒</strong><br>
+      · 每人 4 条件 × 2 次 = 8 个片段，4 人共 32 个<br>
+      · 每个片段结束<strong>立刻导出</strong>，不要攒到最后<br>
+      · 做题用打印的题目纸，手机只负责采集传感器<br>
+      · 条件 A 和 D 指导语必须严格区分<br>
+      · Day1 全天采集，Day2 分析+写论文
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Screen 2: 采集工具 (Setup) ═══ -->
+<div id="screen-setup" class="screen">
+  <div class="title">FlipFocus</div>
+  <div class="subtitle">注意力仪式研究采集工具</div>
+
+  <div class="card">
+    <div class="label">被试编号</div>
+    <div class="row" id="subj-chips"></div>
+  </div>
+
+  <div class="card">
+    <div class="label">实验条件</div>
+    <div id="cond-btns"></div>
+  </div>
+
+  <div class="card">
+    <div class="label">重复次数</div>
+    <div class="row" id="rep-chips"></div>
+  </div>
+
+  <button class="btn btn-primary" onclick="startSession()" id="btn-start">开始采集（25分钟）</button>
+
+  <div style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
+    <input type="checkbox" id="debug-mode" onchange="toggleDebug()" style="width:16px;height:16px">
+    <label for="debug-mode">🧪 Debug模式：缩短至2分钟（仅用于测试导出功能）</label>
+  </div>
+
+  <div class="card highlight" style="margin-top:16px">
+    <div style="font-size:12px;color:#157A3A;line-height:1.6">
+      <strong>📋 传感器阈值校准</strong><br>
+      面朝下放桌上：accZ ≈ -0.9~-1.0g，光线 &lt; 10 lux<br>
+      若偏差大，调整下方参数：
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--muted)">Z阈值:</span>
+      <input id="cfg-z" type="number" value="-0.75" step="0.05" style="width:60px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px">
+      <span style="font-size:12px;color:var(--muted)">光线阈值:</span>
+      <input id="cfg-light" type="number" value="15" step="1" style="width:55px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px">
+      <button onclick="updateConfig()" style="padding:6px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--bg);color:var(--accent);font-size:12px;cursor:pointer">应用</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Screen 3: Recording ═══ -->
+<div id="screen-session" class="screen">
+  <div class="badge-wrap">
+    <span id="badge" class="status-badge status-up">📱 面朝上</span>
+  </div>
+
+  <div class="timer" id="timer">25:00</div>
+  <div class="progress-wrap"><div class="progress-fill" id="progress-bar" style="width:0%"></div></div>
+
+  <div class="info-row">
+    <span id="info-subj"></span>
+    <span id="info-cond"></span>
+    <span id="info-rep"></span>
+  </div>
+
+  <div class="card">
+    <div class="label">传感器实时值 <span id="sensor-mode" style="font-size:10px;font-weight:400;margin-left:8px"></span></div>
+    <div class="sensor-grid">
+      <div>
+        <div style="font-size:11px;color:var(--muted)">加速度 Z</div>
+        <div class="sensor-val" id="s-accz">--</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted)">光线</div>
+        <div class="sensor-val" id="s-light">--</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted)">面朝下</div>
+        <div class="sensor-val" id="s-face">否</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="stats-grid">
+      <div><div class="stat-num" id="st-flips">0</div><div class="stat-label">翻转次数</div></div>
+      <div><div class="stat-num" id="st-duration">00:00</div><div class="stat-label">面朝下时长</div></div>
+      <div><div class="stat-num" id="st-points">0</div><div class="stat-label">数据点</div></div>
+    </div>
+  </div>
+
+  <div id="session-actions">
+    <button class="btn btn-ghost" onclick="earlyStop()" style="border-color:var(--border)">提前结束</button>
+  </div>
+  <div id="session-done" style="display:none">
+    <button class="btn btn-green" onclick="exportData()" id="btn-export" style="width:100%;padding:14px;font-size:17px;margin-bottom:12px">📦 实验完成，导出数据</button>
+    <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px">⬆ 点击上方绿色大按钮下载 bundle.json（含传感器原始数据）</p>
+    <button class="btn btn-ghost" onclick="resetToSetup()" style="margin-top:4px">返回采集页</button>
+  </div>
+</div>
+
+<!-- ═══ Screen 4: History ═══ -->
+<div id="screen-data" class="screen">
+  <div class="title" style="font-size:24px">历史数据</div>
+  <div class="subtitle" id="data-count">0 条记录</div>
+  <div id="data-list" style="max-height:50vh;overflow-y:auto"></div>
+  <button class="btn btn-ghost" onclick="exportAll()" style="font-size:12px;color:var(--muted);border-color:var(--border)">导出全部元数据（仅摘要，不含传感器数据）</button>
+</div>
+
+<!-- ═══ Bottom Navigation ═══ -->
+<div class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" onclick="showScreen('screen-guide')" id="nav-guide">
+    <span class="nav-icon">📋</span>实验指南
+  </div>
+  <div class="nav-item" onclick="showScreen('screen-setup')" id="nav-collect">
+    <span class="nav-icon">📱</span>采集工具
+  </div>
+  <div class="nav-item" onclick="showScreen('screen-data')" id="nav-data">
+    <span class="nav-icon">📂</span>历史数据
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// State
+// ═══════════════════════════════════════════════════════════
+const SUBJECTS = ['P1','P2','P3','P4'];
+const CONDITIONS = ['A_主动翻转','B_面朝上','C_无手机','D_被动翻转'];
+
+let state = {
+  subject: 'P1',
+  condition: 'A_主动翻转',
+  repetition: 1,
+  cfgZ: -0.75,
+  cfgLight: 15,
+  debugMode: false, sessionActive: false,
+  elapsed: 0,
+  faceDown: false,
+  faceDownSince: null,
+  flipConfirmTimer: null,
+  totalFaceDownMs: 0,
+  flipCount: 0,
+  dataLog: [],
+  flipEvents: [],
+  sessionTimer: null,
+  motionHandler: null,
+  lightSensor: null,
+};
+
+let permGranted = false;
+let lightSensorAvailable = false;
+
+// ═══════════════════════════════════════════════════════════
+// Bottom Navigation
+// ═══════════════════════════════════════════════════════════
+function showScreen(id) {
+  // Don't allow navigation during active session
+  if (state.sessionActive && id !== 'screen-session') {
+    showToast('实验采集中，请先完成或结束当前片段', 'warn'); return;
+  }
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navMap = { 'screen-guide':'nav-guide', 'screen-setup':'nav-collect', 'screen-data':'nav-data' };
+  const navId = navMap[id];
+  if (navId) document.getElementById(navId).classList.add('active');
+
+  if (id === 'screen-data') refreshDataList();
+  if (id === 'screen-setup') initSetupScreen();
+}
+
+// Show/hide bottom nav
+function setNavVisible(v) {
+  document.getElementById('bottomNav').style.display = v ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// Permission & Init
+// ═══════════════════════════════════════════════════════════
+async function requestPermission() {
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    try {
+      const resp = await DeviceMotionEvent.requestPermission();
+      if (resp !== 'granted') { showToast('需要传感器权限才能进行实验', 'warn'); return; }
+    } catch(e) { showToast('权限请求失败: ' + e.message, 'warn'); return; }
+  }
+  permGranted = true;
+  initSetupScreen();
+  showScreen('screen-guide');
+}
+
+function initSetupScreen() {
+  document.getElementById('subj-chips').innerHTML = SUBJECTS.map(p =>
+    `<span class="chip${state.subject===p?' active':''}" onclick="selectSubject('${p}')">${p}</span>`
+  ).join('');
+
+  document.getElementById('cond-btns').innerHTML = CONDITIONS.map(c =>
+    `<button class="cond-btn${state.condition===c?' active':''}" onclick="selectCondition('${c}')">${c}</button>`
+  ).join('');
+
+  document.getElementById('rep-chips').innerHTML = [1,2].map(r =>
+    `<span class="chip${state.repetition===r?' active':''}" onclick="selectRepetition(${r})">第${r}次</span>`
+  ).join('');
+
+  document.getElementById('cfg-z').value = state.cfgZ;
+  document.getElementById('cfg-light').value = state.cfgLight;
+}
+
+function selectSubject(p) { state.subject = p; initSetupScreen(); }
+function selectCondition(c) { state.condition = c; initSetupScreen(); }
+function selectRepetition(r) { state.repetition = r; initSetupScreen(); }
+function updateConfig() {
+  state.cfgZ = parseFloat(document.getElementById('cfg-z').value) || -0.75;
+  state.cfgLight = parseFloat(document.getElementById('cfg-light').value) || 15;
+  showToast(`阈值: Z<${state.cfgZ}g, 光线<${state.cfgLight}lux`, 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════
+// Checklist
+// ═══════════════════════════════════════════════════════════
+const CHECKLIST_ITEMS = [
+  'Day1 上午: 4人集合 — 签知情同意书 + 校准手机',
+  'Day1 上午: P1+P2 同时完成 4条件(ABCD)',
+  'Day1 上午: P3+P4 同时完成 4条件(ABCD)',
+  'Day1 下午: P1+P2 第2次重复 4条件',
+  'Day1 下午: P3+P4 第2次重复 4条件',
+  'Day1: 全部 32 个片段数据导出到电脑',
+  'Day2 上午: 批改 32 份题目 + 录入问卷',
+  'Day2 上午: 运行分析脚本（01→02→03→04）',
+  'Day2 下午: 论文撰写（Introduction + System）',
+  'Day2 下午: 论文撰写（Results + Discussion）',
+  'Day2 晚上: 图表润色 + 参考文献 + 检查',
+  'Day2 23:00前: 投 UbiComp 2026 Teenager Show',
+];
+
+function renderChecklist() {
+  const checked = JSON.parse(localStorage.getItem('flipfocus_checklist') || '{}');
+  document.getElementById('checklist').innerHTML = CHECKLIST_ITEMS.map((item, i) => {
+    const done = checked[i] || false;
+    return `<div class="cl-item" onclick="toggleCheck(${i})">
+      <div class="cl-box${done?' done':''}"></div>
+      <span class="cl-text${done?' done':''}">${item}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleCheck(i) {
+  const checked = JSON.parse(localStorage.getItem('flipfocus_checklist') || '{}');
+  checked[i] = !checked[i];
+  localStorage.setItem('flipfocus_checklist', JSON.stringify(checked));
+  renderChecklist();
+}
+
+// ═══════════════════════════════════════════════════════════
+// Session
+// ═══════════════════════════════════════════════════════════
+function toggleDebug() {
+  state.debugMode = document.getElementById('debug-mode').checked;
+  const btn = document.getElementById('btn-start');
+  const duration = state.debugMode ? 2 : 25;
+  btn.textContent = '开始采集（' + duration + '分钟' + (state.debugMode ? ' · Debug' : '') + '）';
+}
+
+function getSessionDuration() { return state.debugMode ? 2 : 25; }
+
+function startSession() {
+  state.dataLog = [];
+  state.flipEvents = [];
+  state.elapsed = 0;
+  const durationMin = getSessionDuration();
+  // 清除旧autosave
+  localStorage.removeItem('flipfocus_autosave');
+  state.faceDown = false;
+  state.faceDownSince = null;
+  state.totalFaceDownMs = 0;
+  state.flipCount = 0;
+  state.sessionActive = true;
+  if (state.flipConfirmTimer) clearTimeout(state.flipConfirmTimer);
+
+  document.getElementById('info-subj').textContent = state.subject;
+  document.getElementById('info-cond').textContent = state.condition;
+  document.getElementById('info-rep').textContent = '第' + state.repetition + '次';
+  updateTimerUI();
+  document.getElementById('session-actions').style.display = 'block';
+  document.getElementById('session-done').style.display = 'none';
+  document.getElementById('badge').className = 'status-badge status-up';
+  document.getElementById('badge').textContent = '📱 面朝上';
+
+  showScreen('screen-session');
+  setNavVisible(false); // Hide nav during recording
+
+  startMotionSensor();
+  startLightSensor();
+
+  state.sessionTimer = setInterval(() => {
+    state.elapsed++;
+    updateTimerUI();
+    // 每60秒自动备份传感器数据到localStorage（防误关/崩溃）
+    if (state.elapsed % 60 === 0) autoBackup();
+    if (state.elapsed >= getSessionDuration() * 60) endSession();
+  }, 1000);
+}
+
+function autoBackup() {
+  try {
+    const backup = {
+      participant: state.subject, condition: state.condition, repetition: state.repetition,
+      elapsed: state.elapsed, flipCount: state.flipCount, totalFaceDownMs: state.totalFaceDownMs,
+      sensors: state.dataLog, flips: state.flipEvents,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('flipfocus_autosave', JSON.stringify(backup));
+  } catch(e) { /* localStorage 满则静默失败 */ }
+}
+
+function updateTimerUI() {
+  const totalSec = getSessionDuration() * 60;
+  const remaining = totalSec - state.elapsed;
+  const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+  const s = (remaining % 60).toString().padStart(2, '0');
+  document.getElementById('timer').textContent = m + ':' + s;
+  document.getElementById('progress-bar').style.width = (state.elapsed / (getSessionDuration()*60) * 100) + '%';
+  document.getElementById('st-flips').textContent = state.flipCount;
+  document.getElementById('st-duration').textContent = formatDuration(state.totalFaceDownMs);
+  document.getElementById('st-points').textContent = state.dataLog.length;
+}
+
+function formatDuration(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
+  const s = (totalSec % 60).toString().padStart(2, '0');
+  return m + ':' + s;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Motion Sensor
+// ═══════════════════════════════════════════════════════════
+function startMotionSensor() {
+  let lastSample = 0;
+  state.motionHandler = function(event) {
+    if (!state.sessionActive) return;
+    const now = Date.now();
+    if (now - lastSample < 90) return; // ~10Hz
+    lastSample = now;
+
+    const acc = event.accelerationIncludingGravity;
+    if (!acc) return;
+    const zG = (acc.z || 0) / 9.8;
+
+    document.getElementById('s-accz').textContent = zG.toFixed(2) + 'g';
+    document.getElementById('s-accz').className = 'sensor-val' + (zG < state.cfgZ ? ' on' : '');
+
+    state.dataLog.push({ ts: now, acc_z: parseFloat(zG.toFixed(4)), light: 999, face_down: 0 });
+    checkFaceDown(zG, now);
+  };
+  window.addEventListener('devicemotion', state.motionHandler);
+}
+
+function startLightSensor() {
+  if ('AmbientLightSensor' in window) {
+    try {
+      state.lightSensor = new AmbientLightSensor({ frequency: 2 });
+      state.lightSensor.addEventListener('reading', () => {
+        if (!state.sessionActive) return;
+        const lux = state.lightSensor.illuminance;
+        document.getElementById('s-light').textContent = Math.round(lux) + ' lux';
+        document.getElementById('s-light').className = 'sensor-val' + (lux < state.cfgLight ? ' on' : '');
+        if (state.dataLog.length > 0) state.dataLog[state.dataLog.length - 1].light = Math.round(lux);
+        checkFaceDown(null, null);
+      });
+      state.lightSensor.addEventListener('error', () => {
+        lightSensorAvailable = false;
+        document.getElementById('s-light').textContent = '不可用';
+        updateSensorModeUI();
+      });
+      state.lightSensor.start();
+      lightSensorAvailable = true;
+    } catch(e) {
+      lightSensorAvailable = false;
+      document.getElementById('s-light').textContent = '不可用';
+    }
+  } else {
+    lightSensorAvailable = false;
+    document.getElementById('s-light').textContent = '不可用';
+  }
+  updateSensorModeUI();
+}
+
+function updateSensorModeUI() {
+  const el = document.getElementById('sensor-mode');
+  if (el) {
+    if (lightSensorAvailable) {
+      el.textContent = '加速度计 + 光线';
+      el.style.color = 'var(--green)';
+    } else {
+      el.textContent = '仅加速度计（光线传感器不可用）';
+      el.style.color = 'var(--orange)';
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Flip Detection
+// ═══════════════════════════════════════════════════════════
+function checkFaceDown(zG, ts) {
+  if (zG === null && ts === null) {
+    if (state.dataLog.length === 0) return;
+    const last = state.dataLog[state.dataLog.length - 1];
+    zG = last.acc_z; ts = last.ts;
+  }
+  const lastLight = state.dataLog.length > 0 ? state.dataLog[state.dataLog.length - 1].light : 999;
+  const faceDownNow = lightSensorAvailable
+    ? (zG < state.cfgZ) && (lastLight < state.cfgLight)
+    : (zG < state.cfgZ);
+
+  if (state.dataLog.length > 0) state.dataLog[state.dataLog.length - 1].face_down = faceDownNow ? 1 : 0;
+  document.getElementById('s-face').textContent = faceDownNow ? '是' : '否';
+  document.getElementById('s-face').className = 'sensor-val' + (faceDownNow ? ' on' : '');
+
+  if (faceDownNow && state.faceDownSince === null) {
+    state.faceDownSince = ts || Date.now();
+    state.flipConfirmTimer = setTimeout(() => {
+      state.faceDown = true; state.flipCount++;
+      state.flipEvents.push({ type: 'FLIP_DOWN', time: new Date().toISOString(), acc_z: zG, light: lastLight });
+      document.getElementById('badge').className = 'status-badge status-down';
+      document.getElementById('badge').textContent = '📵 面朝下（专注中）';
+      updateTimerUI();
+      if (navigator.vibrate) navigator.vibrate(100);
+    }, 3000);
+  } else if (!faceDownNow && state.faceDownSince !== null) {
+    clearTimeout(state.flipConfirmTimer);
+    const duration = (ts || Date.now()) - state.faceDownSince;
+    if (duration >= 3000) {
+      state.totalFaceDownMs += duration;
+      state.flipEvents.push({ type: 'FLIP_UP', time: new Date().toISOString(), duration_ms: duration });
+    }
+    state.faceDownSince = null; state.faceDown = false;
+    document.getElementById('badge').className = 'status-badge status-up';
+    document.getElementById('badge').textContent = '📱 面朝上';
+    updateTimerUI();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// End & Export
+// ═══════════════════════════════════════════════════════════
+function endSession() {
+  state.sessionActive = false;
+  clearInterval(state.sessionTimer);
+  if (state.flipConfirmTimer) clearTimeout(state.flipConfirmTimer);
+  if (state.motionHandler) window.removeEventListener('devicemotion', state.motionHandler);
+  if (state.lightSensor) { try { state.lightSensor.stop(); } catch(e) {} }
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+  document.getElementById('session-actions').style.display = 'none';
+  document.getElementById('session-done').style.display = 'block';
+  document.getElementById('badge').className = 'status-badge status-down';
+  document.getElementById('badge').textContent = '✅ 实验完成';
+  setNavVisible(true);
+}
+
+function earlyStop() {
+  if (!confirm('确定提前结束？数据将被保留并导出。')) return;
+  endSession();
+}
+
+function exportData() {
+  const prefix = state.subject + '_' + state.condition + '_R' + state.repetition + '_' + Date.now();
+
+  const meta = {
+    participant: state.subject, condition: state.condition, repetition: state.repetition,
+    date: new Date().toLocaleDateString('zh-CN'), duration_min: getSessionDuration(),
+    flip_count: state.flipCount, total_face_down_sec: (state.totalFaceDownMs / 1000).toFixed(1),
+    data_points: state.dataLog.length,
+  };
+
+  const bundle = {
+    meta: meta,
+    sensors: state.dataLog,
+    flips: state.flipEvents,
+  };
+
+  const jsonStr = JSON.stringify(bundle, null, 2);
+  const filename = prefix + '_bundle.json';
+
+  // 方法1：Blob下载（桌面浏览器有效）
+  let downloadOk = false;
+  try {
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    downloadOk = true;
+  } catch(e) {}
+
+  // 方法2：textarea兜底（微信/手机浏览器Blob可能被拦，复制粘贴最可靠）
+  var div = document.getElementById('export-fallback');
+  if (!div) {
+    div = document.createElement('div');
+    div.id = 'export-fallback';
+    div.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:var(--bg);padding:16px;overflow-y:auto';
+    document.body.appendChild(div);
+  }
+  div.innerHTML =
+    '<div style="max-width:480px;margin:0 auto">' +
+    '<div class="title" style="font-size:24px;margin-bottom:8px">📦 数据导出</div>' +
+    '<div class="subtitle" style="margin-bottom:12px">' + filename + '</div>' +
+    (downloadOk ? '<div style="padding:10px;border-radius:10px;background:#E6F7ED;color:#157A3A;font-size:14px;margin-bottom:12px;text-align:center">✅ 文件已自动下载（如未弹出请用下方备用方案）</div>' : '<div style="padding:10px;border-radius:10px;background:#FFF3E0;color:#B85C00;font-size:14px;margin-bottom:12px;text-align:center">⚠️ 自动下载未触发，请使用下方备用方案</div>') +
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:8px"><strong>备用方案：</strong>复制下面全部内容 → 微信发给自己 → 在电脑上另存为 <code style="background:var(--border);padding:1px 4px;border-radius:3px">' + filename + '</code></div>' +
+    '<textarea id="export-textarea" readonly style="width:100%;height:200px;padding:10px;border-radius:10px;border:1px solid var(--border);font-family:monospace;font-size:11px;background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px"' + '>' + jsonStr.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&/g,'&amp;').replace(/&amp;lt;/g,'&lt;').replace(/&amp;gt;/g,'&gt;') + '</textarea>' +
+    '<button class="btn btn-primary" onclick="copyExport()" style="width:100%;margin-bottom:8px">📋 一键复制全部数据</button>' +
+    '<button class="btn btn-ghost" onclick="document.getElementById(\'export-fallback\').style.display=\'none\'" style="width:100%;font-size:12px;color:var(--muted)">关闭（数据仍可恢复）</button>' +
+    '</div>';
+  div.style.display = 'block';
+
+  saveToHistory(prefix, meta);
+  showToast('数据已导出 ✓', 'ok');
+}
+
+function copyExport() {
+  var ta = document.getElementById('export-textarea');
+  if (!ta) return;
+  // 还原转义
+  var raw = ta.value.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(raw).then(function(){
+      showToast('已复制 ✓ 微信发给自己 → 电脑另存为bundle.json', 'ok');
+    }).catch(function(){
+      ta.select(); document.execCommand('copy');
+      showToast('已复制 ✓', 'ok');
+    });
+  } else {
+    ta.select(); document.execCommand('copy');
+    showToast('已复制 ✓', 'ok');
+  }
+}
+
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime + ';charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function resetToSetup() {
+  showScreen('screen-setup');
+}
+
+// ═══════════════════════════════════════════════════════════
+// History
+// ═══════════════════════════════════════════════════════════
+function saveToHistory(prefix, meta) {
+  const h = JSON.parse(localStorage.getItem('flipfocus_history') || '[]');
+  h.push({ prefix, meta, savedAt: new Date().toISOString() });
+  localStorage.setItem('flipfocus_history', JSON.stringify(h));
+}
+
+function refreshDataList() {
+  const h = JSON.parse(localStorage.getItem('flipfocus_history') || '[]').reverse();
+  document.getElementById('data-count').textContent = h.length + ' 条记录';
+  if (h.length === 0) {
+    document.getElementById('data-list').innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px">暂无数据</p>';
+    return;
+  }
+  document.getElementById('data-list').innerHTML = h.map((r, i) => `
+    <div style="background:var(--card);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border)">
+      <div style="font-weight:700;font-size:14px;margin-bottom:4px">${r.meta.participant} · ${r.meta.condition} · 第${r.meta.repetition}次</div>
+      <div style="font-size:12px;color:var(--muted)">${r.meta.date} | 翻转${r.meta.flip_count}次 | 数据点${r.meta.data_points}</div>
+      <button onclick="deleteHistoryItem(${h.length-1-i})" style="margin-top:6px;padding:4px 10px;border-radius:6px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:11px;cursor:pointer">删除</button>
+    </div>
+  `).join('');
+}
+
+function deleteHistoryItem(idx) {
+  if (!confirm('删除？')) return;
+  const h = JSON.parse(localStorage.getItem('flipfocus_history') || '[]');
+  h.splice(idx, 1);
+  localStorage.setItem('flipfocus_history', JSON.stringify(h));
+  refreshDataList();
+}
+
+function exportAll() {
+  const h = JSON.parse(localStorage.getItem('flipfocus_history') || '[]');
+  if (h.length === 0) { showToast('无数据', 'warn'); return; }
+  downloadFile('flipfocus_all_meta_' + Date.now() + '.json', JSON.stringify(h.map(r => r.meta), null, 2), 'application/json');
+  showToast('元数据已导出', 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast ' + (type || 'ok'); el.style.display = 'block';
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => { el.style.display = 'none'; }, 2500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Boot
+// ═══════════════════════════════════════════════════════════
+(function() {
+  renderChecklist();
+  // 检查是否有未恢复的autosave数据
+  var saved = localStorage.getItem('flipfocus_autosave');
+  if (saved) {
+    try {
+      var backup = JSON.parse(saved);
+      if (backup.sensors && backup.sensors.length > 0) {
+        var mins = Math.floor(backup.elapsed / 60);
+        var secs = backup.elapsed % 60;
+        if (confirm('⚠️ 检测到未恢复的实验数据！\n\n被试：' + backup.participant + '\n条件：' + backup.condition + '\n已采集：' + mins + '分' + secs + '秒\n传感器数据：' + backup.sensors.length + '条\n\n点「确定」立即导出，点「取消」忽略。')) {
+          state.subject = backup.participant;
+          state.condition = backup.condition;
+          state.repetition = backup.repetition;
+          state.elapsed = backup.elapsed;
+          state.flipCount = backup.flipCount;
+          state.totalFaceDownMs = backup.totalFaceDownMs;
+          state.dataLog = backup.sensors;
+          state.flipEvents = backup.flips;
+          exportData();
+          localStorage.removeItem('flipfocus_autosave');
+        }
+      }
+    } catch(e) {}
+  }
+  if (typeof DeviceMotionEvent === 'undefined') {
+    permGranted = true;
+    initSetupScreen();
+    showScreen('screen-guide');
+  } else if (typeof DeviceMotionEvent.requestPermission !== 'function') {
+    permGranted = true;
+    initSetupScreen();
+    showScreen('screen-guide');
+  }
+  // iOS 13+ stays on permission screen
+})();
+</script>
+</body>
+</html>

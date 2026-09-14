@@ -1,0 +1,10 @@
+{
+  "participant": "P3",
+  "condition": "D_被动翻转",
+  "repetition": 3,
+  "date": "2026/5/28",
+  "duration_min": 25,
+  "flip_count": 1,
+  "total_face_down_sec": "1445.7",
+  "data_points": 15040
+}

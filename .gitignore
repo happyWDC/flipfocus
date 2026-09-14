@@ -1,0 +1,44 @@
+# ── 大文件：出版用 TIFF（每张 25–40 MB，共约 250 MB），仓库里不放 ──
+*.tiff
+*.tif
+
+# ── 压缩包与归档 ──
+*.rar
+*.zip
+*.7z
+*.tar
+*.tar.gz
+
+# ── 投稿/出版的内部材料，不公开 ──
+8.18/
+TAPS_submission/
+
+# ── LaTeX 编译中间产物（保留 .tex/.bib/.bbl/.pdf）──
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.out
+*.blg
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# ── Node / Expo ──
+node_modules/
+.expo/
+dist/
+web-build/
+
+# ── 系统与编辑器 ──
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*~

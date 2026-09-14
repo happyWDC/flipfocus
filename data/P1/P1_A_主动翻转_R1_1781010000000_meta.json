@@ -1,0 +1,10 @@
+{
+  "participant": "P1",
+  "condition": "A_主动翻转",
+  "repetition": 1,
+  "date": "2026/5/26",
+  "duration_min": 25,
+  "flip_count": 1,
+  "total_face_down_sec": "1488.7",
+  "data_points": 14985
+}

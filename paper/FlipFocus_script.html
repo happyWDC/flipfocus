@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>FlipFocus — 2-Minute Presentation Script</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Arial", "Helvetica", "Microsoft YaHei", sans-serif; background: #f8f8f6; color: #222; max-width: 720px; margin: 40px auto; padding: 0 24px 60px; line-height: 1.9; }
+  h1 { font-size: 24pt; text-align: center; margin-bottom: 4px; color: #1a1a2e; }
+  .meta { text-align: center; font-size: 11pt; color: #888; margin-bottom: 30px; }
+  .meta span { margin: 0 10px; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 24px 0; }
+  .slide { background: #fff; border-radius: 8px; padding: 24px 28px; margin: 20px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border-left: 4px solid #7B8FA1; }
+  .slide h2 { font-size: 14pt; color: #7B8FA1; margin-bottom: 10px; font-weight: 700; }
+  .slide p { font-size: 13pt; margin: 6px 0; }
+  .slide ul, .slide ol { margin: 6px 0 6px 20px; font-size: 13pt; }
+  .slide li { margin: 4px 0; }
+  .slide .highlight { color: #B8978A; font-weight: bold; }
+  .slide .point { color: #1a1a2e; font-weight: 700; }
+  .footer { text-align: center; font-size: 11pt; color: #aaa; margin-top: 30px; }
+  @media print { body { background: #fff; } .slide { box-shadow: none; border: 1px solid #ddd; } }
+</style>
+</head>
+<body>
+
+<h1>FlipFocus — 2 分钟演讲讲稿</h1>
+<div class="meta">
+  <span>Speaker: Decheng Wang</span>
+  <span>|</span>
+  <span>CHCI 2026</span>
+  <span>|</span>
+  <span>~2 分钟</span>
+</div>
+
+<hr>
+
+<div class="slide">
+  <h2>Slide 1 — 标题 (5s)</h2>
+  <p>各位老师好，我是 Decheng Wang，来自上海三林中学。今天介绍 FlipFocus——一个基于浏览器传感器的手机翻转行为检测工具。</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 2 — 研究动机 (18s)</h2>
+  <p>你有没有注意过——开始学习或工作前，会习惯性地把手机翻成面朝下？这个 2 秒的动作可能是一种自我调节仪式。</p>
+  <p>但要研究它，面临三个障碍：</p>
+  <ul>
+    <li><span class="point">第一</span>，每次实验得开发原生 App，应用商店审核，被试安装——耗时数周。对高中生科研来说根本不可行。</li>
+    <li><span class="point">第二</span>，没有任何专门检测手机翻转的工具。现有 EMA 平台只做问卷采样，不管手机物理状态。</li>
+    <li><span class="point">第三</span>，不同手机传感器差异巨大。iOS Safari 不暴露环境光 API，部分华为禁用接近传感器。固定传感器组合的方案在大量设备上直接失败。</li>
+  </ul>
+</div>
+
+<div class="slide">
+  <h2>Slide 3 — 核心设计理念 (15s)</h2>
+  <p>FlipFocus 的核心思路是：<span class="highlight">把传感器差异从缺陷变成特性。</span></p>
+  <p>运行时探测设备有哪些传感器可用，自动选择融合模式。缺失光线传感器？自动降级为仅加速度计——实验不中断。UI 实时显示当前数据质量。</p>
+  <p>双传感器模式下 F1 达到 0.970。而且零安装，浏览器扫码就能用。</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 4 — 三大核心模块 (15s)</h2>
+  <p><span class="point">模块 A：退化引擎</span>——探测传感器可用性，自动切换融合模式。</p>
+  <p><span class="point">模块 B：状态机</span>——3 秒确认窗口区分有意翻转和随机噪声，±5 秒过渡期排除，XY 轴静态性校验。</p>
+  <p><span class="point">模块 C：实验生态</span>——四条件组内设计范式、标准化材料包、Python 全流程分析管线。发一条微信链接就能开始采集，跑完脚本就能出论文图表。</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 5 — 真实场景发现 (20s)</h2>
+  <p>我们做了真实场景验证：4 名被试，4 种条件，25 分钟会话。拿到了首批完整传感器数组——14,981 个采样点。</p>
+  <p>最意外的发现是 P2：他被要求保持手机面朝上，却<span class="highlight">自发翻了 6 次</span>，总共 265 秒面朝下。</p>
+  <p>其中有一次只持续了 4.9 秒——他立刻意识到"不对，我应该面朝上"并翻回来。这说明：</p>
+  <ol>
+    <li>翻转行为有很强的习惯性，指导语压不住。</li>
+    <li>4.9 秒的自我纠正确认了指导语在被试意识中是有约束的——只是不够强。</li>
+  </ol>
+</div>
+
+<div class="slide">
+  <h2>Slide 6 — 自评专注度分析 (18s)</h2>
+  <p>自评问卷也给出了有意思的结果。</p>
+  <p>主动翻转条件下专注度中位数最高——19.5 分。面朝上条件最低——15.5 分。Friedman 检验显著。</p>
+  <p>关键对比：实验员帮翻和面朝上差异不大——<span class="highlight">只有自己动手翻，专注体验才明显更好。</span>物理状态本身不够，执行翻转的主体性可能是关键心理因素。</p>
+  <p>效度验证：自评和客观正确率相关 r = 0.771, p &lt; 0.001。问卷成功捕获了真实专注信号，不是主观偏差。</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 7 — 与已有工作对比 (10s)</h2>
+  <p>跟已有工具相比：PIEL Survey 需要安装 App，浏览器传感器研究不检测翻转，实验室研究缺乏生态效度。</p>
+  <p>FlipFocus 是<span class="highlight">唯一</span>在零安装、传感器自适应、翻转检测、实验配套四个维度上全部打勾的平台。</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 8 — 四项核心贡献 (8s)</h2>
+  <ul>
+    <li><span class="point">C1</span>：自适应三级传感器退化策略</li>
+    <li><span class="point">C2</span>：3 秒确认窗口状态机，F1 = 0.970</li>
+    <li><span class="point">C3</span>：完整实验生态系统</li>
+    <li><span class="point">C4</span>：首批完整 25 分钟传感器数据 + 自发翻转行为发现 + r = 0.771</li>
+  </ul>
+</div>
+
+<div class="slide">
+  <h2>Slide 9 — 总结 (8s)</h2>
+  <p>一句话总结：FlipFocus 把移动 HCI 实验的部署门槛从<span class="highlight">"开发一个 App"</span>降到了<span class="highlight">"发送一条链接"</span>。</p>
+  <p>代码、材料、分析管线全部开源——从高中生到专业研究者，都可以用。</p>
+</div>
+
+<div class="slide">
+  <h2>Slide 10 — 致谢 (3s)</h2>
+  <p>谢谢！欢迎提问。</p>
+</div>
+
+<div class="footer">Total: ~120 seconds (2 minutes) &nbsp;|&nbsp; Decheng Wang &nbsp;|&nbsp; CHCI 2026</div>
+
+</body>
+</html>

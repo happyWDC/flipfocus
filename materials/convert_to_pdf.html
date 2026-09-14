@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlipFocus 实验材料</title>
+<style>
+  @media print {
+    .page-break { page-break-before: always; }
+    .no-print { display: none; }
+    body { font-size: 13px; }
+  }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    max-width: 800px; margin: 40px auto; padding: 0 24px;
+    color: #1a1a1a; line-height: 1.8; background: #fff;
+  }
+  h1 { font-size: 24px; border-bottom: 2px solid #3366FF; padding-bottom: 8px; margin-top: 0; }
+  h2 { font-size: 18px; color: #3366FF; margin-top: 28px; }
+  h3 { font-size: 15px; margin-top: 20px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 13px; }
+  th { background: #f0f4ff; font-weight: 700; }
+  code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  pre { background: #f8f8f8; padding: 12px 16px; border-radius: 8px; overflow-x: auto; font-size: 12px; }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  blockquote {
+    border-left: 4px solid #3366FF; padding: 8px 16px;
+    background: #f5f7ff; margin: 12px 0; font-size: 14px;
+  }
+  .checklist td:first-child { text-align: center; width: 40px; }
+  .btn-print {
+    display: block; width: 200px; margin: 20px auto; padding: 14px;
+    background: #3366FF; color: #fff; border: none; border-radius: 12px;
+    font-size: 16px; cursor: pointer; text-align: center;
+  }
+  .highlight { background: #fffde7; padding: 12px 16px; border-left: 4px solid #ffc107; margin: 12px 0; }
+  .highlight-green { background: #e8f5e9; padding: 12px 16px; border-left: 4px solid #4caf50; margin: 12px 0; }
+  hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<div class="no-print" style="text-align:center;padding:20px;background:#f0f4ff;border-radius:12px;margin-bottom:30px">
+  <p style="font-size:16px;font-weight:700;margin:0">📄 打印说明</p>
+  <p style="margin:8px 0;color:#666">点击下方按钮 → 目标打印机选 <strong>「另存为 PDF」</strong> → 保存</p>
+  <button class="btn-print" onclick="window.print()">🖨️ 打印/导出 PDF</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 文件1：被试导出指南 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h1>📱 实验结束后 — 数据导出指南</h1>
+<p><strong>每个片段（25分钟）结束后，花 30 秒完成以下操作 👇</strong></p>
+
+<h2>第一步：点击导出按钮</h2>
+<p>时间到了之后，页面会自动弹出绿色按钮：</p>
+<blockquote>🟢 <strong>「实验完成，导出数据」</strong></blockquote>
+<p><strong>点它。</strong></p>
+
+<h2>第二步：1 个文件自动下载</h2>
+<p>你的手机浏览器会自动下载 <strong>1 个文件</strong>：</p>
+<blockquote><code>P1_A_主动翻转_R1_一串数字_bundle.json</code></blockquote>
+<p>这个文件里包含了所有数据（传感器、翻转记录、实验信息）。</p>
+<div class="highlight">
+  ⚠️ 文件名前面的 <code>P1</code>、<code>A_主动翻转</code> 是自动生成的，<strong>不需要你修改</strong>。
+</div>
+<p>下载路径一般在这里找：</p>
+<ul>
+  <li><strong>文件管理 → 下载</strong>（Download 文件夹）</li>
+  <li>或浏览器菜单 → 下载记录</li>
+</ul>
+
+<h2>第三步：发给实验员</h2>
+<p>把这个文件通过以下任一方式发给我（只需发 <strong>1 个文件</strong>，非常简单）：</p>
+<ul>
+  <li><strong>微信</strong>：长按文件 → 转发给实验员 ← 推荐</li>
+  <li><strong>微信文件传输助手</strong>：发给自己的文件传输助手，电脑端下载</li>
+</ul>
+
+<h2>实验员联系方式</h2>
+<table>
+  <tr><td><strong>微信</strong></td><td>____________________</td></tr>
+  <tr><td><strong>电话</strong></td><td>____________________</td></tr>
+</table>
+
+<h2>⚠️ 注意</h2>
+<ul>
+  <li><strong>每个片段结束后马上导出</strong>，不要攒到最后（浏览器关了数据就没了）</li>
+  <li>导出不需要联网，文件存在手机本地</li>
+  <li>如果点了没反应，看看浏览器顶部有没有弹窗问「是否允许下载多个文件」→ 点「允许」</li>
+</ul>
+
+<div class="highlight-green">
+  <strong>就 1 个文件，发微信就行。感谢你的参与！🎉</strong>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 文件2：实验员操作清单 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page-break"></div>
+<h1>🔄 FlipFocus 实验重做 — 实验员操作清单</h1>
+<p><strong>目标</strong>：4 名学生 × 4 条件 × 2 次重复 = <strong>32 个数据片段</strong><br>
+<strong>工具</strong>：<code>FlipFocus.html</code>（已改单文件导出）</p>
+
+<h2>一、实验前准备（实验员）</h2>
+<table class="checklist">
+  <tr><td>☐</td><td>把 <code>FlipFocus.html</code> 发给 4 个学生的手机（微信发送，用浏览器打开）</td></tr>
+  <tr><td>☐</td><td>打印 32 份题目纸（每片段 1 份，ABCD 四个版本打乱顺序）</td></tr>
+  <tr><td>☐</td><td>打印 32 份自评问卷（5 题 Likert）</td></tr>
+  <tr><td>☐</td><td>打印 4 份知情同意书（含监护人签字栏）</td></tr>
+  <tr><td>☐</td><td>准备计时器（或直接用 FlipFocus 内置 25 分钟倒计时）</td></tr>
+  <tr><td>☐</td><td>检查每台手机的浏览器：Android → Chrome，iPhone → <strong>必须用 Safari</strong></td></tr>
+  <tr><td>☐</td><td>每台手机校准 Z 阈值和光线阈值（面朝下放桌上，看实时值）</td></tr>
+</table>
+
+<h2>二、实验设计</h2>
+<table>
+  <tr><th>条件</th><th>谁翻手机</th><th>手机状态</th><th>指导语（严格照读）</th></tr>
+  <tr><td><strong>A 主动翻转</strong></td><td>学生自己</td><td>面朝下</td><td>"请你把手机翻过来面朝下放好，然后开始做题"</td></tr>
+  <tr><td><strong>B 面朝上</strong></td><td>不翻</td><td>面朝上</td><td>"手机就放这里，你开始做题"</td></tr>
+  <tr><td><strong>C 无手机</strong></td><td>—</td><td>拿走</td><td>"我把手机拿到另一个房间去，你开始做题"</td></tr>
+  <tr><td><strong>D 被动翻转</strong></td><td>实验员帮翻</td><td>面朝下</td><td>"我来帮你翻过来。好了，你开始做题"</td></tr>
+</table>
+
+<div class="highlight">
+  ⭐ 核心对比是 A vs D：唯一区别是「谁动手翻」
+</div>
+
+<h3>每人 8 个片段（半天可完成）</h3>
+<table>
+  <tr><th>片段</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
+  <tr><th>条件</th><td>A</td><td>B</td><td>C</td><td>D</td><td>A</td><td>B</td><td>C</td><td>D</td></tr>
+</table>
+<p>建议顺序：A→B→C→D→A→B→C→D（每人），片段间休息 3–5 分钟</p>
+
+<h2>三、每个片段的标准操作</h2>
+
+<h3>开始前</h3>
+<table class="checklist">
+  <tr><td>☐</td><td>FlipFocus 页面选好：<strong>被试编号</strong>（P1/P2/P3/P4）+ <strong>条件</strong> + <strong>第 X 次</strong></td></tr>
+  <tr><td>☐</td><td>读对应条件的指导语</td></tr>
+  <tr><td>☐</td><td>发题目纸</td></tr>
+  <tr><td>☐</td><td>点 <strong>「开始采集」</strong></td></tr>
+</table>
+
+<h3>25 分钟做题中</h3>
+<table class="checklist">
+  <tr><td>☐</td><td>确认手机传感器指示灯正常（Z 轴 / 光线实时值在变）</td></tr>
+  <tr><td>☐</td><td>学生做题，不要干扰</td></tr>
+</table>
+
+<h3>结束后</h3>
+<table class="checklist">
+  <tr><td>☐</td><td>倒计时归零 → 绿按钮出现</td></tr>
+  <tr><td>☐</td><td>学生点 <strong>「实验完成，导出数据」</strong></td></tr>
+  <tr><td>☐</td><td>确认下载了 1 个 <code>_bundle.json</code> 文件</td></tr>
+  <tr><td>☐</td><td>学生<strong>当场微信发给实验员</strong> ← 不要攒到最后</td></tr>
+  <tr><td>☐</td><td>收题目纸（标记：被试、条件、片段号）</td></tr>
+  <tr><td>☐</td><td>发问卷纸（1 分钟填完，收走）</td></tr>
+</table>
+
+<h2>四、数据回收检查</h2>
+<p>每收到 1 个片段，立即勾选：</p>
+<table class="checklist">
+  <tr><th></th><th>片段1</th><th>片段2</th><th>片段3</th><th>片段4</th><th>片段5</th><th>片段6</th><th>片段7</th><th>片段8</th></tr>
+  <tr><td><strong>P1</strong></td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+  <tr><td><strong>P2</strong></td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+  <tr><td><strong>P3</strong></td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+  <tr><td><strong>P4</strong></td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+</table>
+<div class="highlight-green"><strong>目标：32/32 ✓</strong></div>
+
+<h2>五、数据整理到电脑</h2>
+<pre>data/
+├── P1/
+│   ├── P1_A_主动翻转_R1_1734000000000_bundle.json
+│   ├── P1_B_面朝上_R1_1734000000001_bundle.json
+│   ├── ...（8 个 bundle.json）
+├── P2/
+│   └── ...（8 个）
+├── P3/
+│   └── ...（8 个）
+├── P4/
+│   └── ...（8 个）
+└── questionnaire.csv  ← 手动录入（32 行：自评 5 题 + 正确率）</pre>
+
+<h2>六、运行分析</h2>
+<pre>cd analysis
+pip install -r requirements.txt
+
+python 01_preprocess.py --data-dir ../data/ --questionnaire ../data/questionnaire.csv
+python 02_analysis.py --merged-data ../data/processed/merged_data.csv
+python 03_visualize.py --merged-data ../data/processed/merged_data.csv
+python 04_validate.py --merged-data ../data/processed/merged_data.csv
+python 05_tech_validation.py --data-dir ../data/</pre>
+
+<h2>七、发给学生的文字</h2>
+<blockquote>
+Hi！实验很简单，每轮 25 分钟做题 + 1 分钟导出，总共 8 轮。<br><br>
+最关键的只有一句：<br>
+⏰ 时间到了点「导出数据」→ 把下载的 1 个文件微信发给我<br><br>
+谢谢！🎉
+</blockquote>
+
+<div class="no-print" style="text-align:center;margin-top:40px">
+  <button class="btn-print" onclick="window.print()">🖨️ 打印/导出 PDF</button>
+</div>
+
+</body>
+</html>

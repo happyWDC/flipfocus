@@ -1,0 +1,5 @@
+设备,加速度计,光线传感器,退化模式,备注
+小米13 (Chrome),OK,OK,双传感器,全功能
+华为P40 Pro (Chrome),OK,NO,仅加速度计,光线API未暴露
+iPhone 12 (Safari),OK,NO,仅加速度计,需授权弹窗
+OPPO Reno (Chrome),OK,OK,双传感器,全功能

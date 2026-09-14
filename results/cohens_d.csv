@@ -1,0 +1,7 @@
+comparison,label,d_focus,ci_focus,d_accuracy,ci_accuracy,mean_c1,mean_c2
+A vs B,Active Flip vs Face Up,1.392,"[0.50, 2.28]",0.875,"[0.04, 1.71]",19.2,15.5
+A vs C,Active Flip vs No Phone,0.616,"[-0.20, 1.44]",0.245,"[-0.56, 1.05]",19.2,17.7
+A vs D,Active Flip vs Passive Flip,1.087,"[0.23, 1.94]",0.349,"[-0.46, 1.16]",19.2,16.7
+B vs C,Face Up vs No Phone,-0.848,"[-1.68, -0.01]",-0.756,"[-1.58, 0.07]",15.5,17.7
+B vs D,Face Up vs Passive Flip,-0.481,"[-1.29, 0.33]",-0.585,"[-1.40, 0.23]",15.5,16.7
+C vs D,No Phone vs Passive Flip,0.453,"[-0.36, 1.26]",0.136,"[-0.66, 0.94]",17.7,16.7

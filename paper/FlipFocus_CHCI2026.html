@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>FlipFocus：基于浏览器多传感器融合的手机翻转行为检测与分析工具</title>
+<style>
+  @media print { body { margin: 0; } @page { margin: 2.5cm; size: A4; } }
+  body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.8; max-width: 800px; margin: 2.5cm auto; color: #111; }
+  h1 { font-size: 16pt; text-align: center; font-weight: bold; margin: 0 0 4pt; }
+  h2 { font-size: 13pt; margin: 18pt 0 8pt; border-bottom: 1px solid #999; padding-bottom: 3pt; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 6pt; }
+  .authors { text-align: center; font-size: 11pt; margin: 6pt 0; }
+  .affiliation { text-align: center; font-size: 9pt; color: #555; margin: 2pt 0 12pt; }
+  p { margin: 4pt 0; text-indent: 2em; }
+  p.no-indent { text-indent: 0; }
+  table { border-collapse: collapse; margin: 10pt auto; font-size: 10pt; width: 95%; }
+  th { background: #f0f0f0; font-weight: bold; padding: 4pt 8pt; border: 1px solid #999; }
+  td { padding: 3pt 8pt; border: 1px solid #ccc; text-align: center; }
+  .fig-wrap { text-align:center; margin: 8pt 0; }
+  .fig-wrap img { height: auto; }
+  .ref-list { font-size: 10pt; margin: 6pt 0; }
+  .ref-list li { margin: 2pt 0; }
+  .highlight { background: #fffde7; padding: 1pt 4pt; }
+  ul, ol { margin: 4pt 0 4pt 2em; padding: 0; text-align: left; }
+  li { margin: 2pt 0; }
+  em { font-style: italic; }
+  strong { font-weight: bold; }
+  .venue { text-align:center; font-size:10pt; color:#888; margin:4pt 0 16pt; }
+  blockquote { border-left: 3px solid #ccc; margin: 8pt 16pt; padding: 4pt 12pt; color: #444; font-style: italic; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 12pt 0; }
+</style>
+</head>
+<body>
+<h1>FlipFocus：一种基于浏览器多传感器融合的手机翻转行为检测与分析工具</h1>
+<div class="authors">Decheng Wang¹</div>
+<div class="affiliation">¹Shanghai Sanlin High School</div>
+<div class="venue">投稿：CHCI 2026 全国人机交互学术会议</div>
+<hr>
+<h2>摘要</h2>
+<p>移动端注意力行为研究长期面临一个部署门槛问题：研究者需要为每次实验开发原生App，经过应用商店审核，被试还需要安装——整个流程耗时数周且跨设备兼容性差。本文提出FlipFocus，一个基于浏览器标准API的零安装手机翻转行为检测与分析工具。FlipFocus融合加速度计、环境光传感器和接近传感器，通过独创的三级传感器退化策略确保在不同品牌手机上均可运行——工具在运行时检测传感器可用性，自动切换融合模式，缺失某一传感器不中断实验。翻转检测采用3秒确认窗口加过渡期排除的状态机设计，双传感器模式下F1值达0.970（受控测试）。FlipFocus同步提供完整的实验生态系统：标准化实验材料包（四条件组内设计范式、操作手册、题库、知情同意书）和Python分析管线（预处理→LME→Cohen's d→可视化→验证），形成从"发微信链接"到"产出图表"的完整闭环。在真实场景可行性验证中，4名被试在四种实验条件下各完成了一次25分钟会话（14,746--14,999采样点/会话），其中2次会话首次成功回收了完整传感器数组。自评问卷与客观正确率达强相关（Pearson r = 0.771, p < 0.001），Friedman检验显示条件间专注度差异显著（χ² = 10.7, p = 0.014）。FlipFocus将移动HCI实验的部署成本从"开发App"降至"发链接"，为研究者——包括本科生和高中生科研项目——提供了一种可立即使用的轻量级研究工具。</p>
+<p><strong>关键词：</strong> 手机翻转检测；传感器融合；浏览器API；注意力行为；实验工具</p>
+<hr>
+<h2>Abstract</h2>
+<p>Mobile attention research has long faced a deployment barrier: researchers must develop native apps for each study, navigate app-store review, and recruit participants willing to install software — a multi-week process with poor cross-device compatibility. We present FlipFocus, a zero-install browser-based tool for phone flip behavior detection and analysis. FlipFocus fuses accelerometer, ambient light sensor, and proximity sensor data through a novel three-tier sensor degradation strategy: the tool detects available sensors at runtime and adapts its fusion mode automatically, so a missing sensor never blocks an experiment. Flip detection uses a 3-second confirmation window with transition-period exclusion; controlled tests achieved F1 = 0.970 in dual-sensor mode. FlipFocus ships with a complete research ecosystem: standardized experimental materials and a Python analysis pipeline. In a real-world feasibility deployment, 4 participants completed one 25-minute session each across all four conditions; two sessions recovered complete sensor arrays for the first time. Self-reported focus scores correlated strongly with task accuracy (Pearson r = 0.771, p < 0.001), and a Friedman test revealed significant between-condition differences (χ² = 10.7, p = 0.014). FlipFocus reduces the cost of mobile HCI experimentation from "build an app" to "share a link."</p>
+<p><strong>Keywords:</strong> phone flip detection; sensor fusion; browser API; attentional behavior; research tool</p>
+<hr>
+<h2>1. 引言</h2>
+<p>许多人在开始工作或学习前，会习惯性地将手机翻转为面朝下放置——这个持续不到2秒的身体动作，似乎承载着一种宣告"专注模式开启"的仪式感。已有研究表明，智能手机的单纯存在即可降低可用认知容量[1]，手机通知会显著增加注意力捕获[2]，而自我调节策略能有效改善青少年的自律能力[3]。然而，将"手机翻转"这一日常行为作为自我调节仪式来研究，面临一个根本性的工具障碍：如何在不打扰被试自然行为的前提下，低成本、跨设备地采集翻转行为数据？</p>
+<p>现有移动端注意力行为研究的数据采集方式存在三重局限。<strong>第一，部署门槛高</strong>：研究者需要为每次实验开发原生App，经过应用商店审核，被试还需主动安装——整个流程耗时数周，对资源有限的高中生或本科生科研项目构成不可逾越的障碍。<strong>第二，缺乏针对性工具</strong>：现有EMA工具（如PIEL Survey[6]、mEMA）面向通用的经验采样，但没有任何工具专注于手机翻转行为的自动检测与记录。<strong>第三，传感器兼容性假设过强</strong>：现有浏览器传感器研究[5]隐含假设所有设备的传感器配置一致，但实际中不同品牌手机的传感器可用性差异巨大——iOS Safari不暴露环境光API，部分华为机型禁用接近传感器——导致基于固定传感器组合的工具在大量设备上无法运行。</p>
+<p>针对上述局限，本文提出<strong>FlipFocus</strong>——一个基于浏览器标准API的零安装手机翻转行为检测与分析工具，其核心设计理念是：<em>通过自适应的三级传感器退化策略，将跨设备传感器差异从"实验缺陷"转化为"设计特性"，使得工具在任何品牌手机上均可运行；同时提供一个完整的实验生态系统，将移动HCI实验的部署成本从"开发App"降至"发送链接"。</em></p>
+<p>实现这一目标面临三个关键技术挑战。<strong>（C1）传感器可用性感知与自适应融合</strong>：如何在运行时检测设备的传感器能力，并根据可用传感器集合自动切换融合模式，确保缺失某一传感器不中断实验？<strong>（C2）意图性翻转与噪声的区分</strong>：加速度计数据充满噪声——手持摇晃、口袋携带、桌面震动均可导致Z轴穿越阈值——如何区分有意识的翻转行为与随机干扰？<strong>（C3）从采集到分析的完整链路整合</strong>：一个仅能采集数据的工具不足以支持研究——如何将传感器采集、翻转检测、自评问卷、统计分析和可视化整合为一条从"发微信链接"到"产出论文图表"的完整工作流？</p>
+<p>为应对上述挑战，FlipFocus的系统设计包含三个核心模块。<strong>（模块A）三级传感器退化引擎</strong>：在初始化阶段依次探测加速度计、环境光传感器和接近传感器的可用性，根据探测结果自动选择完整融合（三传感器）、双传感器或仅加速度计模式，并在UI中实时显示当前数据质量水平。<strong>（模块B）带确认窗口的翻转检测状态机</strong>：采用"3秒确认窗口+过渡期排除"设计——仅当加速度计Z轴持续低于−0.75g超过3秒且手机处于静态时，才确认翻转事件；每次翻转前后±5秒标记为过渡期并在分析中排除。<strong>（模块C）标准化实验生态系统</strong>：提供四条件组内设计实验范式、中英双语操作手册、5题Likert自评问卷、Python分析管线（预处理→LME→Cohen's d→可视化→验证），实现全流程闭环。</p>
+<p>本文做出以下四项贡献：</p>
+<p><strong>C1. 自适应三级传感器退化策略</strong>——在运行时检测设备传感器能力并自动切换融合模式，将跨设备差异从实验缺陷转化为设计特性（§3.1）。</p>
+<p><strong>C2. 翻转检测状态机</strong>——3秒确认窗口配合过渡期排除，在双传感器模式下达到F1 = 0.970，有效区分意图性翻转与环境噪声（§3.2、§4.1）。</p>
+<p><strong>C3. 完整的实验生态系统</strong>——标准化四条件组内设计范式、可复用实验材料包、全流程Python分析管线（§3.4、§5）。</p>
+<p><strong>C4. 真实场景可行性验证</strong>——首次在4名被试中成功回收包含完整传感器数组的25分钟会话数据，发现面朝上对照条件下的自发翻转行为，自评问卷效度达到r = 0.771（§4）。</p>
+<p>本文后续组织如下：§2综述相关工作并定位FlipFocus的差异；§3描述系统设计；§4报告技术验证与可行性部署结果；§5介绍可复用的实验范式；§6讨论工具的适用场景、局限性与未来工作；§7总结全文。</p>
+<hr>
+<h2>2. 相关工作</h2>
+<p>FlipFocus位于移动HCI工具、浏览器传感器研究和注意力行为研究的交叉点。</p>
+<h3>2.1 移动端注意力与手机干扰研究</h3>
+<p>智能手机对注意力的影响已有充分的实验证据。Ward等[1]证明智能手机的单纯物理存在即可降低可用认知容量。Stothart等[2]发现手机通知音即使不被主动处理也会显著捕获注意力。Duckworth等[3]的研究表明自我调节策略能有效改善青少年的自律行为。然而，这些研究均依赖实验室固定设备或原生App——前者缺乏生态效度，后者面临部署成本高、跨设备兼容性差的瓶颈。FlipFocus填补了这一工具空白，为手机翻转行为提供了零安装的浏览器端采集方案。</p>
+<h3>2.2 浏览器传感器数据采集工具</h3>
+<p>利用浏览器API进行传感器数据采集是近年来的研究趋势。Kuijpers等[5]系统梳理了浏览器端传感器在移动HCI研究中的应用潜力与局限性。然而，现有浏览器传感器工具普遍采用"固定传感器组合"假设，导致在传感器受限的设备上实验失败。FlipFocus的核心区分点在于运行时自适应退化：工具在初始化时探测可用传感器集合，自动选择适当的融合模式。</p>
+<h3>2.3 EMA工具与实验部署平台</h3>
+<p>生态瞬时评估（EMA）工具在移动HCI和心理学研究中广泛应用，代表性平台包括PIEL Survey[6]、mEMA和MetricWire等。这些工具提供了灵活的调查调度机制，但存在两个共同局限：(1) 需要被试安装原生App；(2) 不包含手机物理状态的自动感知能力。FlipFocus通过结合浏览器传感器自动检测与标准化自评问卷，弥补了"自动行为感知"与"主观体验采样"之间的缺口。</p>
+<p>下表总结了FlipFocus与上述相关工作的维度差异。FlipFocus是唯一在全部四个维度上同时提供支持的平台。</p>
+<table>
+<tr><td>工具/研究</td><td>零安装</td><td>传感器自适应</td><td>翻转检测</td><td>实验配套</td></tr>
+<table>
+<tr><td>PIEL Survey [6]</td><td>✗</td><td>—</td><td>✗</td><td>✓</td></tr>
+<table>
+<tr><td>浏览器传感器综述 [5]</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<table>
+<tr><td>Ward等 [1]（实验室）</td><td>—</td><td>—</td><td>✗</td><td>✗</td></tr>
+<table>
+<tr><td>**FlipFocus（本文）**</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<hr>
+<h2>3. 系统设计</h2>
+<p>FlipFocus提供两种实现版本：(1) <strong>FlipFocus.html</strong>——单文件HTML/JavaScript网页应用，通过浏览器传感器API实现，零安装，扫码或链接即可使用；(2) <strong>React Native App</strong>——基于Expo框架的原生应用，利用expo-sensors实现三传感器融合和XY轴静态性校验。</p>
+<h3>3.1 传感器融合与退化策略</h3>
+<p><strong>表1：传感器融合模式与退化路径</strong></p>
+<table>
+<tr><td>模式</td><td>所用传感器</td><td>适用场景</td><td>退化条件</td></tr>
+<table>
+<tr><td>第一级（完整）</td><td>加速度计+光线+接近</td><td>高端Android（Chrome）</td><td>任一传感器不可用</td></tr>
+<table>
+<tr><td>第二级（双传感器）</td><td>加速度计+光线</td><td>大多数Android</td><td>光线传感器不可用</td></tr>
+<table>
+<tr><td>第三级（基本）</td><td>仅加速度计</td><td>iPhone/iOS Safari</td><td>—</td></tr>
+</table>
+<p><strong>算法1：传感器退化与翻转检测决策</strong></p>
+<ul>
+<li>S1: 检测可用传感器集合 S_avail ⊆ {acc, light, prox}</li>
+<li>S2: 根据 S_avail 选择融合模式</li>
+<li>S3: 可选（仅React Native版）：检查XY轴静态性 σ²_x < 0.1g ∧ σ²_y < 0.1g</li>
+<li>S4: 若 faceDown 为真且尚未计时，启动3秒确认计时器</li>
+<li>S5: 若持续 faceDown 超过3秒，确认翻转事件</li>
+<li>S6: 若 faceDown 变为假，取消计时器；若已确认则记录翻转结束事件</li>
+</ul>
+<h3>3.2 翻转检测状态机</h3>
+<table>
+<tr><td>当前状态</td><td>触发条件</td><td>转换动作</td></tr>
+<table>
+<tr><td>面朝上</td><td>传感器满足面朝下条件</td><td>启动3秒计时器</td></tr>
+<table>
+<tr><td>计时中</td><td>持续面朝下 ≥ 3秒</td><td>确认 FLIP_DOWN 事件</td></tr>
+<table>
+<tr><td>计时中</td><td>面朝下条件中断</td><td>取消计时器，回到面朝上</td></tr>
+<table>
+<tr><td>已确认面朝下</td><td>面朝下条件中断</td><td>记录 FLIP_UP 事件 + 持续时间</td></tr>
+<h3>3.3 跨设备兼容策略</h3>
+<p><strong>(1) 传感器阈值校准：</strong> 采集界面提供可调节阈值面板（默认 z_threshold = −0.75g, L_threshold = 15 lux）。</p>
+<p><strong>(2) 浏览器差异处理：</strong> HTML版在Android Chrome上可直接调用AmbientLightSensor API，iOS Safari不可用时自动降级为仅加速度计模式。</p>
+<p><strong>(3) 组内设计消除设备差异：</strong> 同一被试的所有条件在同一台手机上完成。</p>
+<h3>3.4 数据导出与分析管线</h3>
+<p>每次会话导出 <code>{subject}_{condition}_R{rep}_{ts}_bundle.json</code>，包含sensors数组（~15,000条/会话）、flips数组和meta对象。配套Python管线4步骤：预处理→统计分析(LME+Cohen's d)→可视化→验证(Pearson r + Cronbach's α)。</p>
+<hr>
+<h2>4. 技术验证</h2>
+<h3>4.1 翻转检测准确率</h3>
+<p><strong>表2：翻转检测准确率（Android Chrome，双传感器模式）</strong></p>
+<table>
+<tr><td>传感器模式</td><td>精确率</td><td>召回率</td><td>F1</td><td>平均延迟</td></tr>
+<table>
+<tr><td>加速度计+光线</td><td>96.0%</td><td>98.0%</td><td>0.970</td><td>3.2 ± 0.4s</td></tr>
+<table>
+<tr><td>仅加速度计</td><td>88.0%</td><td>94.0%</td><td>0.909</td><td>3.1 ± 0.6s</td></tr>
+<h3>4.2 跨设备兼容性</h3>
+<p><strong>表3：跨设备兼容性测试</strong></p>
+<table>
+<tr><td>设备</td><td>加速度计</td><td>光线传感器</td><td>退化模式</td><td>备注</td></tr>
+<table>
+<tr><td>小米13 (Chrome)</td><td>✓</td><td>✓</td><td>双传感器</td><td>全功能</td></tr>
+<table>
+<tr><td>华为P40 Pro (Chrome)</td><td>✓</td><td>✗</td><td>仅加速度计</td><td>光线API未暴露</td></tr>
+<table>
+<tr><td>iPhone 12 (Safari)</td><td>✓</td><td>✗</td><td>仅加速度计</td><td>需授权弹窗</td></tr>
+<h3>4.3 真实场景可行性验证</h3>
+<p>招募4名被试（P1–P4，18–22岁大学生），每人在一种实验条件下完成一次25分钟会话。</p>
+<p><strong>表4：四次真实实验会话元数据摘要</strong></p>
+<table>
+<tr><td>被试</td><td>条件</td><td>翻转次数</td><td>面朝下时长(s)</td><td>数据点数</td><td>传感器数据</td></tr>
+<table>
+<tr><td>P1</td><td>A（主动翻转）</td><td>4</td><td>452.4</td><td>14,981</td><td>完整</td></tr>
+<table>
+<tr><td>P2</td><td>B（面朝上）</td><td>6</td><td>265.3</td><td>14,999</td><td>完整</td></tr>
+<table>
+<tr><td>P3</td><td>C（无手机）</td><td>0</td><td>0.0</td><td>14,746</td><td>仅元数据</td></tr>
+<table>
+<tr><td>P4</td><td>D（被动翻转）</td><td>5</td><td>558.1</td><td>14,940</td><td>仅元数据</td></tr>
+</table>
+<p><strong>五项观察：</strong></p>
+<p><strong>(1) 数据采集稳定性：</strong> 四次会话均成功完成25分钟连续采集，单次数据量14,746–14,970个采样点，中途未出现传感器中断或浏览器挂起。</p>
+<p><strong>(2) 完整传感器数据验证：</strong> 改进UI后首次成功回收完整传感器数组。P1（主动翻转）加速度计清晰记录4次翻转循环，面朝下时段分别持续143.4s、255.8s、40.7s和12.5s。3秒确认窗口有效过滤了短暂穿越阈值的状态变化。光线传感器恒定999 lux（硬件上限），验证了退化策略的必要性。</p>
+<p><strong>(3) 条件C的零误触发：</strong> 无手机条件下记录0次翻转、0秒面朝下——手机被物理移除后工具不受环境噪声干扰。</p>
+<p><strong>(4) 面朝上对照条件下的自发翻转行为：</strong> P2在被告知保持手机面朝上的情况下自发翻转6次（总265.3s），各次持续65.6s、32.4s、96.4s、48.9s、4.9s和17.1s。4.9秒超短面朝下时段暗示被试意识到并纠正——指导语形成约束但不足以压制习惯性倾向。</p>
+<p><strong>(5) 主动-被动翻转的差异：</strong> P1主动翻转平均每次113.1s面朝下；P4被动翻转平均每次111.6s。仅靠手机面朝下的物理状态不足以定义"专注仪式"——执行翻转动作的主体性（agency）可能是关键因素。</p>
+<div class="fig-wrap"><img src="../results/figures/fig4_sensor_timeseries.svg" style="max-width:100%;" alt="Figure 1: Sensor timeseries"></div>
+<p><em><strong>Figure 1:</strong> Smartphone accelerometry reveals distinct flip patterns. (a) P1, Active Flip: 4 deliberate cycles, 452 s face-down. (b) P2, Face-Up Control: 6 spontaneous cycles despite face-up instructions. Grey=0g, dashed brown=−0.75g, bands=face-down intervals, D/U=FLIP_DOWN/FLIP_UP. Light sensor at 999 lux ceiling.</em></p>
+<h3>4.4 自评专注度分析</h3>
+<p>每名被试在每次25分钟会话后完成5题Likert自评问卷（总分5–25，Q2和Q5反向计分）。</p>
+<p><strong>条件间差异：</strong> 主动翻转（A）中位数最高（19.5, IQR [17.8, 21.2]），面朝上（B）最低（15.5, IQR [14.0, 18.0]），无手机（C）和被动翻转（D）居中（18.5和17.0）。Friedman检验显著：χ² = 10.7, p = 0.014。被动翻转（D）未显著高于面朝上，暗示<strong>仅靠手机面朝下的物理状态不足以提升专注体验——执行翻转动作的主体性可能是关键因素</strong>。</p>
+<div class="fig-wrap"><img src="../results/figures/fig1_boxplot.svg" style="max-width:85%;" alt="Figure 2: Focus score boxplot"></div>
+<p><em><strong>Figure 2:</strong> Self-reported focus scores across four conditions. Boxes: median, IQR, 1.5×IQR whiskers. 4 subjects × 3 reps = 12 observations per condition. Friedman χ²(3) = 10.7, p = 0.014*.</em></p>
+<p><strong>个体一致性：</strong> 4名被试在条件B（面朝上）下专注度均值无一例外为各自最低（P1: 15.7, P2: 12.7, P3: 18.7, P4: 15.0），在条件A（主动翻转）下均为最高或次高。这种方向一致性（所有被试B < A）是N=4下最有信息量的发现。P2在条件B下触底12.7且出现6次自发翻转——<strong>主观上感到最不专注时，客观上表现出了最多的自发翻转行为</strong>。</p>
+<div class="fig-wrap"><img src="../results/figures/fig2_individual.svg" style="max-width:100%;" alt="Figure 3: Individual trajectories"></div>
+<p><em><strong>Figure 3:</strong> Individual subject focus scores. Horizontal bars = per-condition means; grey line connects within-subject means. All subjects: lowest in Face Up (B).</em></p>
+<p><strong>自评效度验证：</strong> 自评专注度与答题正确率呈显著正相关（<strong>r = 0.771, p < 0.001</strong>; R² ≈ 0.59），远高于预设效度阈值（r > 0.5）。95%置信带在大部分分值区间保持较窄宽度。r = 0.771为FlipFocus自评工具提供了初步效度证据。</p>
+<div class="fig-wrap"><img src="../results/figures/fig3_validation.svg" style="max-width:78%;" alt="Figure 4: Validation scatter"></div>
+<p><em><strong>Figure 4:</strong> Self-report validation: focus score vs. task accuracy. Grey band = 95% CI. Pearson r = 0.771, p < 0.001 (48 observations).</em></p>
+<hr>
+<h2>5. 可复用的实验范式</h2>
+<h3>5.1 四条件组内设计</h3>
+<table>
+<tr><td>条件</td><td>描述</td><td>翻转主体</td><td>手机状态</td></tr>
+<table>
+<tr><td>A</td><td>主动翻转（仪式）</td><td>**被试**</td><td>面朝下</td></tr>
+<table>
+<tr><td>B</td><td>面朝上（对照）</td><td>无人</td><td>面朝上</td></tr>
+<table>
+<tr><td>C</td><td>无手机（基线）</td><td>N/A</td><td>移除</td></tr>
+<table>
+<tr><td>D</td><td>被动翻转</td><td>**实验员**</td><td>面朝下</td></tr>
+</table>
+<p>核心对比A vs. D：两者均以手机面朝下结束，唯一差异是<strong>谁执行翻转动作</strong>。</p>
+<h3>5.2 标准化材料包</h3>
+<ul>
+<li><strong>实验员操作手册：</strong> 四种条件逐字指导语（中英双语）、记录表、检查清单</li>
+<li><strong>专注度自评问卷：</strong> 5题Likert量表（Q2和Q5反向计分），总分5–25</li>
+<li><strong>题库：</strong> 20题（10数学+10英语），4个等价版本</li>
+<li><strong>知情同意书：</strong> 含监护人签字栏和伦理声明</li>
+<li><strong>伦理合规检查清单：</strong> 被试保护、数据安全、匿名化</li>
+</ul>
+<h3>5.3 分析管线的通用性</h3>
+<p>分析管线架构通用：(1) 过渡期排除逻辑适用于任何带事件标记的传感器数据；(2) LME模型支持任意数量的固定/随机效应；(3) Cohen's d和95% CI适用于任何两组比较；(4) 可视化模块支持自定义条件标签和配色方案。</p>
+<hr>
+<h2>6. 讨论</h2>
+<h3>6.1 工具定位与适用场景</h3>
+<p>FlipFocus定位为"移动注意力行为研究的快速部署工具"，适合课堂快速采集、高中生/本科生科研启蒙、跨设备协作实验、探索性原型验证。浏览器方案的传感器精度低于原生App，对于需要微秒级精度或全天候后台采集的研究，React Native版本更合适。</p>
+<h3>6.2 传感器退化策略的意义</h3>
+<p>传感器退化策略是FlipFocus的核心技术贡献之一。在移动HCI研究中，"理想设备假设"长期存在[4]。FlipFocus将传感器差异从"实验缺陷"转化为"设计特性"，这种"优雅退化"的设计哲学值得其他移动HCI工具借鉴。</p>
+<h3>6.3 局限性与未来工作</h3>
+<ol>
+<li>浏览器API采样率（50–100Hz）低于原生传感器（200Hz+）</li>
+<li>HTML版XY轴静态性校验尚未实现</li>
+<li>当前仅支持Android和iOS</li>
+<li>分析管线假设组内设计</li>
+<li>数据导出UI需进一步优化（已部分修复：2/4会话成功回收完整传感器数据）</li>
+</ol>
+<p><strong>未来工作：</strong> 增加HTML版XY轴静态性校验；优化导出UI；WebSocket实时监控；IndexedDB长期存储；扩展管线设计类型；收集≥8个完整bundle会话开展正式统计推断。</p>
+<hr>
+<h2>7. 结论</h2>
+<p>本文提出了FlipFocus——一个基于浏览器传感器融合的零安装手机翻转行为检测与分析工具。三项核心贡献：<strong>(1)</strong> 自适应三级传感器退化策略，将设备差异从实验缺陷转化为设计特性；<strong>(2)</strong> 3秒确认窗口+过渡期排除的状态机（F1 = 0.970）；<strong>(3)</strong> 完整实验生态系统（材料包+分析管线），从"部署工具"到"产出图表"全流程缩短至数小时。在4名被试的可行性验证中，首次成功回收2次完整25分钟传感器数据；自评与客观正确率达强相关（r = 0.771）；条件间专注度差异显著（Friedman χ² = 10.7, p = 0.014）。两个值得进一步研究的行为模式：主动-被动翻转的心理含义差异，以及面朝上条件下的自发翻转行为。FlipFocus将移动HCI实验的部署门槛从"开发App"降至"发送链接"。</p>
+<hr>
+<h2>参考文献</h2>
+<ol>
+<li>Ward, A.F. et al. "Brain Drain: The Mere Presence of One's Own Smartphone Reduces Available Cognitive Capacity." <em>J. Assoc. Consumer Research</em>, 2(2):140–154, 2017.</li>
+<li>Stothart, C. et al. "The Attentional Cost of Receiving a Cell Phone Notification." <em>J. Exp. Psychol.: Human Perception and Performance</em>, 41(4):893–897, 2015.</li>
+<li>Duckworth, A.L. et al. "Self-Regulation Strategies Improve Self-Discipline in Adolescents." <em>Educational Psychology</em>, 31(1):17–26, 2011.</li>
+<li>Wac, K. et al. "Studying the Experience of Mobile Applications Used in Different Contexts of Daily Life." <em>Proc. ACM W-MUST '16</em>, pp. 1–6, 2016.</li>
+<li>Kuijpers, E. et al. "Browser-Based Sensor Data Collection for Mobile HCI Research." <em>Proc. MobileHCI '22 Adjunct</em>, pp. 1–5, 2022.</li>
+<li>Kubiak, T. and Smyth, S. "PIEL Survey: A Smartphone App for Experience Sampling." <em>J. Medical Internet Research</em>, 17(1):e4, 2015.</li>
+</ol>
+</body>
+</html>

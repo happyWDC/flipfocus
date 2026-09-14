@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FlipFocus — CHCI 2026 Presentation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Arial", "Helvetica", sans-serif; background: #f5f0e6; color: #2a2a2a; overflow: hidden; }
+  .slide-container { width: 100vw; height: 100vh; position: relative; }
+  .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 80px; opacity: 0; transition: opacity 0.5s; text-align: center; }
+  .slide.active { opacity: 1; z-index: 1; }
+  .slide h1 { font-size: 42pt; margin-bottom: 20px; color: #1a1a2e; font-weight: 800; }
+  .slide h2 { font-size: 28pt; margin-bottom: 30px; color: #B8978A; font-weight: 600; }
+  .slide h3 { font-size: 22pt; margin-bottom: 16px; color: #8FA894; }
+  .slide p { font-size: 18pt; line-height: 1.8; max-width: 900px; margin: 8px 0; }
+  .slide ul { text-align: left; max-width: 850px; margin: 0 auto; }
+  .slide li { font-size: 17pt; line-height: 2; margin: 4px 0; }
+  .slide .sub { font-size: 14pt; color: #777; margin-top: 16px; }
+  .slide .highlight { color: #E8A860; font-weight: bold; }
+  .slide .accent { color: #7B8FA1; font-weight: bold; }
+  .slide .tagline { font-size: 20pt; color: #B8978A; font-style: italic; margin-top: 30px; }
+  .slide .big-number { font-size: 56pt; font-weight: 900; color: #E8A860; margin: 10px 0; }
+  .slide .stat-row { display: flex; gap: 40px; justify-content: center; margin: 16px 0; }
+  .slide .stat-box { text-align: center; }
+  .slide .stat-box .val { font-size: 32pt; font-weight: 800; color: #7B8FA1; }
+  .slide .stat-box .lbl { font-size: 12pt; color: #777; }
+  .slide .columns { display: flex; gap: 30px; max-width: 950px; justify-content: center; text-align: left; }
+  .slide .col { flex: 1; }
+  .slide .col h3 { font-size: 16pt; margin-bottom: 8px; }
+  .slide .col p, .slide .col li { font-size: 14pt; line-height: 1.6; }
+  .progress { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 11pt; color: #999; z-index: 10; }
+  .nav { position: fixed; bottom: 16px; right: 24px; font-size: 11pt; color: #999; z-index: 10; }
+  .notes { position: fixed; bottom: 0; left: 0; right: 0; background: #e8e2d4; color: #3a3a3a; padding: 10px 24px; font-size: 11pt; line-height: 1.5; z-index: 5; border-top: 1px solid #d5cfc0; display: none; }
+  .notes.show { display: block; }
+  .notes-toggle { position: fixed; bottom: 16px; left: 24px; font-size: 10pt; color: #888; cursor: pointer; z-index: 10; background: none; border: 1px solid #ccc; padding: 4px 10px; border-radius: 4px; }
+  .notes-toggle:hover { color: #555; border-color: #999; }
+  .slide .finding-box { background: rgba(0,0,0,0.03); border-left: 3px solid #E8A860; padding: 12px 20px; margin: 12px 0; text-align: left; max-width: 850px; border-radius: 0 6px 6px 0; }
+  .slide .finding-box p { font-size: 15pt; margin: 4px 0; color: #3a3a3a; }
+  table { border-collapse: collapse; margin: 12px auto; font-size: 14pt; }
+  th { background: rgba(0,0,0,0.06); padding: 8px 16px; border: 1px solid #ccc; color: #2a2a2a; }
+  td { padding: 6px 16px; border: 1px solid #ddd; color: #2a2a2a; }
+  .check { color: #6E8B7A; }
+  .cross { color: #9B6E6E; }
+</style>
+</head>
+<body>
+
+<div class="slide-container" id="slides">
+
+  <!-- Slide 1 -->
+  <div class="slide active">
+    <h1>FlipFocus</h1>
+    <h2>A Browser-Based Multi-Sensor Fusion Tool for Phone Flip Detection and Analysis</h2>
+    <p class="tagline">Reducing the cost of mobile HCI experimentation from <span class="highlight">"build an app"</span> to <span class="highlight">"share a link"</span></p>
+    <p class="sub">Decheng Wang &nbsp;|&nbsp; Shanghai Sanlin High School &nbsp;|&nbsp; CHCI 2026</p>
+  </div>
+
+  <!-- Slide 2 -->
+  <div class="slide">
+    <h2>Motivation</h2>
+    <p>Many people <span class="highlight">habitually flip their phone face-down</span> before working or studying —<br>does this two-second action carry the weight of declaring "focus mode engaged"?</p>
+    <div style="margin-top: 30px;">
+      <p style="font-size:16pt;color:#888;">But studying this faces a</p>
+      <p style="font-size:22pt;color:#E8A860;">fundamental tool barrier</p>
+    </div>
+    <div class="columns" style="margin-top:20px;">
+      <div class="col"><h3 style="color:#9B6E6E;">✗ Deployment Barrier</h3><p>Native app per study, store review, user install — weeks of overhead</p></div>
+      <div class="col"><h3 style="color:#9B6E6E;">✗ No Specialized Tool</h3><p>Existing EMA platforms do surveys, not phone-state sensing</p></div>
+      <div class="col"><h3 style="color:#9B6E6E;">✗ Sensor Homogeneity Assumption</h3><p>iOS Safari lacks AmbientLightSensor; Huawei blocks proximity — fixed-stack tools fail</p></div>
+    </div>
+  </div>
+
+  <!-- Slide 3 -->
+  <div class="slide">
+    <h2>Core Design Philosophy</h2>
+    <p style="font-size:20pt;max-width:800px;line-height:2;">
+      <span class="highlight">Adaptive three-tier sensor degradation</span> —<br>
+      transforming cross-device heterogeneity from a <span style="color:#9B6E6E;">flaw</span> into a <span style="color:#6E8B7A;">feature</span>
+    </p>
+    <div class="stat-row" style="margin-top:36px;">
+      <div class="stat-box"><div class="val">0.970</div><div class="lbl">F1 Score (dual-sensor)</div></div>
+      <div class="stat-box"><div class="val">3 Tiers</div><div class="lbl">Adaptive degradation</div></div>
+      <div class="stat-box"><div class="val">Zero</div><div class="lbl">Installation required</div></div>
+    </div>
+  </div>
+
+  <!-- Slide 4 -->
+  <div class="slide">
+    <h2>Three Core Modules</h2>
+    <div class="columns">
+      <div class="col">
+        <h3 style="color:#7B8FA1;">Module A: Degradation Engine</h3>
+        <p>Runtime probing of accelerometer, light, and proximity sensors</p>
+        <p>→ Auto-select fusion mode</p>
+        <p>→ Missing sensor → no experiment failure</p>
+        <p style="color:#666;font-size:12pt;">Real-time quality indicator in UI</p>
+      </div>
+      <div class="col">
+        <h3 style="color:#B8978A;">Module B: State Machine</h3>
+        <p>3-second confirmation window</p>
+        <p>±5 s transition-period exclusion</p>
+        <p>XY stationarity check (σ² &lt; 0.1g)</p>
+        <p style="color:#666;font-size:12pt;">F1 = 0.970 dual-sensor mode</p>
+      </div>
+      <div class="col">
+        <h3 style="color:#8FA894;">Module C: Experiment Ecosystem</h3>
+        <p>Four-condition within-subjects paradigm</p>
+        <p>Standardized materials + questionnaire</p>
+        <p>Python analysis pipeline</p>
+        <p style="color:#666;font-size:12pt;">Link → data → figures: complete workflow</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5 -->
+  <div class="slide">
+    <h2>Real-World Feasibility Deployment</h2>
+    <p style="font-size:15pt;color:#888;">4 participants × 25 min × 4 conditions | First complete sensor recordings</p>
+    <div class="finding-box">
+      <p><span class="highlight">Finding 1:</span> P1 (Active Flip) — 4 clean flip cycles, 452 s face-down total<br>
+      <span style="color:#666;font-size:13pt;">→ State machine correctly captures all events; 3 s window filters noise</span></p>
+    </div>
+    <div class="finding-box">
+      <p><span class="highlight">Finding 2:</span> P2 (Face-Up Control) — <span style="color:#E8A860;">6 spontaneous flips</span>, 265 s total<br>
+      <span style="color:#666;font-size:13pt;">→ Told to keep phone face-up, yet could not resist — habituality evidence</span></p>
+    </div>
+    <div class="finding-box">
+      <p><span class="highlight">Finding 3:</span> 4.9 s ultra-short face-down interval<br>
+      <span style="color:#666;font-size:13pt;">→ Immediate self-correction — instruction partially observed but insufficient</span></p>
+    </div>
+  </div>
+
+  <!-- Slide 6 -->
+  <div class="slide">
+    <h2>Self-Reported Focus Analysis</h2>
+    <div class="stat-row">
+      <div class="stat-box"><div class="val">19.5</div><div class="lbl">Active Flip median</div></div>
+      <div class="stat-box"><div class="val">15.5</div><div class="lbl">Face Up median</div></div>
+      <div class="stat-box"><div class="val">p = 0.014</div><div class="lbl">Friedman test</div></div>
+    </div>
+    <div class="finding-box" style="margin-top:20px;">
+      <p><span class="highlight">Key insight:</span> Passive Flip (experimenter flips) did <em>not</em> differ from Face Up</p>
+      <p style="font-size:14pt;">→ <span class="highlight">Physical face-down state alone is insufficient — the agency of the flip may be the critical factor</span></p>
+    </div>
+    <div class="finding-box">
+      <p><span class="highlight">Validation:</span> Self-report vs. task accuracy: <span class="accent">r = 0.771, p &lt; 0.001</span></p>
+      <p style="font-size:14pt;">→ Questionnaire captures real focus signals, not subjective bias</p>
+    </div>
+  </div>
+
+  <!-- Slide 7 -->
+  <div class="slide">
+    <h2>Comparison with Related Work</h2>
+    <table>
+      <tr><th>Tool / Study</th><th>Zero-Install</th><th>Sensor-Adaptive</th><th>Flip Detection</th><th>Experiment Kit</th></tr>
+      <tr><td>PIEL Survey</td><td class="cross">✗</td><td>—</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Browser-sensor survey</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+      <tr><td>Ward et al. (lab)</td><td>—</td><td>—</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+      <tr style="background:rgba(232,168,96,0.15);"><td><strong>FlipFocus (this work)</strong></td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+    </table>
+    <p class="tagline" style="margin-top:20px;">The only platform supporting all four dimensions simultaneously</p>
+  </div>
+
+  <!-- Slide 8 -->
+  <div class="slide">
+    <h2>Four Core Contributions</h2>
+    <div style="text-align:left;max-width:800px;">
+      <div class="finding-box"><p><span class="highlight">C1</span> Adaptive three-tier sensor degradation strategy — runtime detection, automatic fusion-mode switching</p></div>
+      <div class="finding-box"><p><span class="highlight">C2</span> 3 s confirmation-window state machine — F1 = 0.970, distinguishes intentional flips from noise</p></div>
+      <div class="finding-box"><p><span class="highlight">C3</span> Complete research ecosystem — materials + analysis pipeline, link → publication figures</p></div>
+      <div class="finding-box"><p><span class="highlight">C4</span> Real-world feasibility deployment — first complete 25-min sensor recordings, r = 0.771</p></div>
+    </div>
+  </div>
+
+  <!-- Slide 9 -->
+  <div class="slide">
+    <h2>In Summary</h2>
+    <p style="font-size:24pt;max-width:800px;line-height:2;">
+      FlipFocus reduces the cost of mobile HCI experimentation from<br>
+      <span style="color:#9B6E6E;text-decoration:line-through;">"build an app"</span><br>
+      to<br>
+      <span class="highlight" style="font-size:28pt;">"share a link"</span>
+    </p>
+    <p class="sub" style="margin-top:30px;">Code, materials &amp; pipeline — fully open-source &nbsp;|&nbsp; For high-school to professional researchers</p>
+  </div>
+
+  <!-- Slide 10 -->
+  <div class="slide">
+    <h1 style="font-size:52pt;">Thank You</h1>
+    <h2>Questions?</h2>
+    <p class="sub" style="margin-top:40px;">Decheng Wang &nbsp;|&nbsp; Shanghai Sanlin High School</p>
+    <p class="sub">FlipFocus — zero-install phone flip detection for everyone</p>
+  </div>
+
+</div>
+
+<div class="progress" id="progress">1 / 10</div>
+<button class="notes-toggle" id="notesBtn" onclick="toggleNotes()">📝 Script</button>
+<div class="nav">← → to navigate &nbsp;|&nbsp; F for fullscreen</div>
+<div class="notes" id="notesPane"></div>
+
+<script>
+const NOTES = [
+  "Good morning/afternoon everyone. I'm Decheng Wang from Shanghai Sanlin High School. Today I'm presenting FlipFocus — a browser-based tool for detecting phone flip behavior.",
+  "Have you ever noticed yourself flipping your phone face-down before starting work? This two-second action might be a self-regulation ritual. But studying it faces three barriers. First, you need to build a native app for every experiment — weeks of work, impossible for high-school research. Second, no existing tool detects phone flips automatically. Third, sensor availability varies wildly across phones — iOS Safari has no ambient light API, some Huawei phones block proximity. Fixed sensor stacks just fail.",
+  "FlipFocus's core idea: turn sensor heterogeneity from a bug into a feature. We probe available sensors at runtime and auto-select a fusion mode. Missing light sensor? Automatically degrade to accelerometer-only — the experiment continues. F1 reaches 0.970 in dual-sensor mode. And it's zero-install — just scan a QR code in the browser.",
+  "The system has three modules. Module A: a degradation engine that detects sensors and switches modes. Module B: a state machine with a 3-second confirmation window to separate intentional flips from noise. Module C: a complete experiment ecosystem — paradigm, materials, questionnaire, and a Python analysis pipeline. Send a link, collect data, run the script, get publication figures.",
+  "We ran a real-world deployment: 4 participants, 4 conditions, 25-minute sessions. We recovered the first-ever complete sensor recordings — 14,981 data points. The biggest surprise: P2, told to keep his phone face-up, spontaneously flipped it 6 times. One interval lasted just 4.9 seconds — he immediately corrected himself. This tells us flipping is habitual, and instructions alone can't suppress it.",
+  "Self-report data is equally interesting. Active Flip shows the highest median focus score — 19.5 out of 25. Face Up is the lowest. Here's the critical comparison: Passive Flip — where the experimenter flips the phone — didn't differ from Face Up. Only doing it yourself seems to matter. The physical state isn't enough — agency might be the key. Validation: self-report correlates with task accuracy at r = 0.771, p < 0.001.",
+  "Compared to existing work: PIEL Survey needs app install. Browser sensor surveys don't detect flips. Lab studies lack ecological validity. FlipFocus is the only platform that checks all four boxes — zero-install, sensor-adaptive, dedicated flip detection, and a complete experiment kit.",
+  "Four contributions: adaptive degradation strategy, 3-second confirmation state machine at F1 0.970, complete experimental ecosystem, and real-world validation with r = 0.771 plus the spontaneous-flipping discovery.",
+  "One sentence: FlipFocus reduces the barrier from building an app to sharing a link. Code, materials, and pipeline are fully open-source — accessible to everyone from high-school students to professional researchers.",
+  "Thank you. Happy to take questions."
+];
+
+let current = 0;
+const total = document.querySelectorAll('.slide').length;
+
+function show(i) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.slide')[i].classList.add('active');
+  document.getElementById('progress').textContent = `${i+1} / ${total}`;
+  document.getElementById('notesPane').textContent = NOTES[i] || '';
+  current = i;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); show(Math.min(current+1, total-1)); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); show(Math.max(current-1, 0)); }
+  if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+
+function toggleNotes() {
+  document.getElementById('notesPane').classList.toggle('show');
+}
+
+show(0);
+</script>
+</body>
+</html>

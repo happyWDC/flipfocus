@@ -1,0 +1,17 @@
+          Mixed Linear Model Regression Results
+=========================================================
+Model:            MixedLM Dependent Variable: focus_score
+No. Observations: 48      Method:             REML       
+No. Groups:       4       Scale:              3.7114     
+Min. group size:  12      Log-Likelihood:     -99.6599   
+Max. group size:  12      Converged:          Yes        
+Mean group size:  12.0                                   
+---------------------------------------------------------
+               Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+---------------------------------------------------------
+Intercept      19.167    0.990 19.353 0.000 17.226 21.108
+C(cond)[T.B]   -3.667    0.786 -4.662 0.000 -5.208 -2.125
+C(cond)[T.C]   -1.500    0.786 -1.907 0.056 -3.041  0.041
+C(cond)[T.D]   -2.500    0.786 -3.179 0.001 -4.041 -0.959
+Group Var       2.686    1.315                           
+=========================================================

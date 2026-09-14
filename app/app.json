@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "FlipFocus",
+    "slug": "flipfocus",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "backgroundColor": "#0A0E1A",
+    "android": {
+      "package": "com.ubicomp.flipfocus",
+      "permissions": [
+        "android.permission.VIBRATE",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.WAKE_LOCK"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "允许FlipFocus访问传感器以检测手机翻转状态"
+        }
+      ]
+    ]
+  }
+}

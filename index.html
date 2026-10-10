@@ -135,9 +135,21 @@
   .cl-box.done::after { content:'✓'; color:#000; font-weight:800; font-size:14px; }
   .cl-text { font-size:13px; color: var(--text); }
   .cl-text.done { color: var(--muted); text-decoration:line-through; }
+
+  /* ── Language toggle ── */
+  #langBtn {
+    position:fixed; top:12px; right:12px; z-index:200;
+    padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--card); color: var(--accent); font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: inherit; box-shadow: var(--shadow);
+    -webkit-tap-highlight-color: transparent;
+  }
+  #langBtn:active { transform: scale(0.96); }
 </style>
 </head>
 <body>
+
+<button id="langBtn" onclick="toggleLang()">EN</button>
 
 <!-- ═══ Toast ═══ -->
 <div id="toast" class="toast"></div>
@@ -146,12 +158,12 @@
 <div id="screen-perm" class="screen active">
   <div style="padding-top:60px">
     <div class="title">FlipFocus</div>
-    <div class="subtitle">注意力仪式研究 · 传感器采集</div>
+    <div class="subtitle" data-i18n="perm.subtitle"></div>
     <div class="perm-box">
-      <h3>📱 需要传感器权限</h3>
-      <p>本工具需要访问设备的运动传感器和光线传感器来检测手机翻转状态。<br>不收集任何个人身份信息、位置或通信内容。</p>
-      <p style="color:#157A3A;font-size:12px">所有数据仅存储在浏览器本地，不上传云端</p>
-      <button class="btn btn-primary" onclick="requestPermission()">授权并开始</button>
+      <h3 data-i18n="perm.h3"></h3>
+      <p data-i18n="perm.body"></p>
+      <p style="color:#157A3A;font-size:12px" data-i18n="perm.local"></p>
+      <button class="btn btn-primary" onclick="requestPermission()" data-i18n="perm.btn"></button>
     </div>
   </div>
 </div>
@@ -161,28 +173,23 @@
 <!-- ════════════════════════════════════════════════════ -->
 <div id="screen-guide" class="screen guide">
   <div class="title">FlipFocus</div>
-  <div class="subtitle">使用说明 · 一步一步跟着做</div>
+  <div class="subtitle" data-i18n="guide.subtitle"></div>
 
   <!-- 这是什么 -->
   <div class="card highlight">
-    <div class="step-desc" style="color:var(--text)">
-      <strong>📱 用浏览器测手机翻转</strong><br>
-      这个页面从手机传感器读取加速度与光线，自动判断手机是否被翻到面朝下，
-      并把数据导出成 JSON 文件。不需要安装任何 App。<br>
-      <span style="font-size:11px;color:var(--muted)">所有数据只保存在你自己的浏览器里，不上传服务器。</span>
-    </div>
+    <div class="step-desc" style="color:var(--text)" data-i18n="guide.what"></div>
   </div>
 
   <!-- 流程概览 -->
   <div class="card">
     <div style="display:flex;justify-content:space-around;text-align:center">
-      <div><div style="font-size:28px">📱</div><div style="font-size:11px;color:var(--muted)">1.授权</div></div>
+      <div><div style="font-size:28px">📱</div><div style="font-size:11px;color:var(--muted)" data-i18n="guide.flow1"></div></div>
       <div style="color:var(--muted)">→</div>
-      <div><div style="font-size:28px">🎛️</div><div style="font-size:11px;color:var(--muted)">2.校准</div></div>
+      <div><div style="font-size:28px">🎛️</div><div style="font-size:11px;color:var(--muted)" data-i18n="guide.flow2"></div></div>
       <div style="color:var(--muted)">→</div>
-      <div><div style="font-size:28px">⏱️</div><div style="font-size:11px;color:var(--muted)">3.采集</div></div>
+      <div><div style="font-size:28px">⏱️</div><div style="font-size:11px;color:var(--muted)" data-i18n="guide.flow3"></div></div>
       <div style="color:var(--muted)">→</div>
-      <div><div style="font-size:28px">📦</div><div style="font-size:11px;color:var(--muted)">4.导出</div></div>
+      <div><div style="font-size:28px">📦</div><div style="font-size:11px;color:var(--muted)" data-i18n="guide.flow4"></div></div>
     </div>
   </div>
 
@@ -191,13 +198,8 @@
     <div style="display:flex;align-items:flex-start">
       <span class="step-num">1</span>
       <div>
-        <div class="step-title">打开页面并授权（10 秒）</div>
-        <div class="step-desc">
-          用手机浏览器打开本页。<br>
-          <span style="color:var(--orange)">iOS</span>：需用 <strong>Safari</strong>，并手动点「授权」<br>
-          <span style="color:var(--green)">Android</span>：Chrome / Edge / 自带浏览器都可以<br>
-          首次会弹出传感器权限请求，点<strong>「授权并开始」</strong>。
-        </div>
+        <div class="step-title" data-i18n="guide.s1t"></div>
+        <div class="step-desc" data-i18n="guide.s1d"></div>
       </div>
     </div>
   </div>
@@ -207,13 +209,8 @@
     <div style="display:flex;align-items:flex-start">
       <span class="step-num">2</span>
       <div>
-        <div class="step-title">校准传感器阈值（1 分钟）</div>
-        <div class="step-desc">
-          切到<strong>「采集」</strong>标签，把手机<strong>面朝下放在桌上</strong>：<br>
-          · accZ 应显示约 <strong>-0.9 ~ -1.0g</strong>（若偏差大，调 Z 阈值）<br>
-          · 光线值应 <strong>&lt; 10 lux</strong>（若偏高，调光线阈值）<br>
-          <span style="color:var(--red)">⚠ 每台手机第一次使用都要校准</span>
-        </div>
+        <div class="step-title" data-i18n="guide.s2t"></div>
+        <div class="step-desc" data-i18n="guide.s2d"></div>
       </div>
     </div>
   </div>
@@ -223,12 +220,8 @@
     <div style="display:flex;align-items:flex-start">
       <span class="step-num">3</span>
       <div>
-        <div class="step-title">开始采集</div>
-        <div class="step-desc">
-          填一个<strong>编号</strong>（随便起，只用来区分数据文件），点「开始采集」。<br>
-          默认 25 分钟，倒计时结束自动停止；也可以随时点「提前结束」保留已采集的数据。<br>
-          <span style="font-size:11px;color:var(--muted)">想快速试一下导出功能，可勾选 Debug 模式（缩短为 2 分钟）。</span>
-        </div>
+        <div class="step-title" data-i18n="guide.s3t"></div>
+        <div class="step-desc" data-i18n="guide.s3d"></div>
       </div>
     </div>
   </div>
@@ -238,37 +231,26 @@
     <div style="display:flex;align-items:flex-start">
       <span class="step-num">4</span>
       <div>
-        <div class="step-title">导出数据</div>
-        <div class="step-desc">
-          结束后点<strong>「导出数据」</strong>下载一个 JSON 文件：<br>
-          <code style="background:var(--border);padding:1px 6px;border-radius:4px;font-size:11px">xxx_bundle.json</code>
-          包含传感器时序 + 翻转事件 + 本次采集信息<br>
-          <span style="font-size:11px;color:var(--muted)">（所有数据打包在一个文件里）</span>
-        </div>
+        <div class="step-title" data-i18n="guide.s4t"></div>
+        <div class="step-desc" data-i18n="guide.s4d"></div>
       </div>
     </div>
   </div>
 
   <!-- 机型差异 -->
   <div class="card highlight">
-    <div class="step-desc" style="color:var(--text)">
-      <strong>📶 不同手机的传感器不一样</strong><br>
-      页面启动时会自动探测可用传感器，并选择合适的融合方式：<br>
-      · <strong>加速度计 + 光线</strong>（多数 Android Chrome）<br>
-      · <strong>仅加速度计</strong>（iOS Safari，或未开放光线接口的机型）<br>
-      缺少某个传感器不会中断采集，只是判定依据少一项。
-    </div>
+    <div class="step-desc" style="color:var(--text)" data-i18n="guide.degrade"></div>
   </div>
 </div>
 
 <!-- ═══ Screen 2: 采集工具 (Setup) ═══ -->
 <div id="screen-setup" class="screen">
   <div class="title">FlipFocus</div>
-  <div class="subtitle">手机翻转检测与数据采集工具</div>
+  <div class="subtitle" data-i18n="setup.subtitle"></div>
 
   <div class="card">
-    <div class="label">编号（用来区分数据文件，随意填）</div>
-    <input id="subj-input" type="text" placeholder="例如：测试1"
+    <div class="label" data-i18n="setup.idLabel"></div>
+    <input id="subj-input" type="text" data-i18n-ph="setup.idPh"
            style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px">
   </div>
 
@@ -276,21 +258,17 @@
 
   <div style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
     <input type="checkbox" id="debug-mode" onchange="toggleDebug()" style="width:16px;height:16px">
-    <label for="debug-mode">🧪 Debug模式：缩短至2分钟（仅用于测试导出功能）</label>
+    <label for="debug-mode" data-i18n="setup.debug"></label>
   </div>
 
   <div class="card highlight" style="margin-top:16px">
-    <div style="font-size:12px;color:#157A3A;line-height:1.6">
-      <strong>📋 传感器阈值校准</strong><br>
-      面朝下放桌上：accZ ≈ -0.9~-1.0g，光线 &lt; 10 lux<br>
-      若偏差大，调整下方参数：
-    </div>
+    <div style="font-size:12px;color:#157A3A;line-height:1.6" data-i18n="setup.calib"></div>
     <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <span style="font-size:12px;color:var(--muted)">Z阈值:</span>
+      <span style="font-size:12px;color:var(--muted)" data-i18n="setup.zLabel"></span>
       <input id="cfg-z" type="number" value="-0.75" step="0.05" style="width:60px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px">
-      <span style="font-size:12px;color:var(--muted)">光线阈值:</span>
+      <span style="font-size:12px;color:var(--muted)" data-i18n="setup.lightLabel"></span>
       <input id="cfg-light" type="number" value="15" step="1" style="width:55px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px">
-      <button onclick="updateConfig()" style="padding:6px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--bg);color:var(--accent);font-size:12px;cursor:pointer">应用</button>
+      <button onclick="updateConfig()" style="padding:6px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--bg);color:var(--accent);font-size:12px;cursor:pointer" data-i18n="setup.apply"></button>
     </div>
   </div>
 </div>
@@ -309,18 +287,18 @@
   </div>
 
   <div class="card">
-    <div class="label">传感器实时值 <span id="sensor-mode" style="font-size:10px;font-weight:400;margin-left:8px"></span></div>
+    <div class="label"><span data-i18n="session.sensorLive"></span> <span id="sensor-mode" style="font-size:10px;font-weight:400;margin-left:8px"></span></div>
     <div class="sensor-grid">
       <div>
-        <div style="font-size:11px;color:var(--muted)">加速度 Z</div>
+        <div style="font-size:11px;color:var(--muted)" data-i18n="session.accZ"></div>
         <div class="sensor-val" id="s-accz">--</div>
       </div>
       <div>
-        <div style="font-size:11px;color:var(--muted)">光线</div>
+        <div style="font-size:11px;color:var(--muted)" data-i18n="session.light"></div>
         <div class="sensor-val" id="s-light">--</div>
       </div>
       <div>
-        <div style="font-size:11px;color:var(--muted)">面朝下</div>
+        <div style="font-size:11px;color:var(--muted)" data-i18n="session.faceDown"></div>
         <div class="sensor-val" id="s-face">否</div>
       </div>
     </div>
@@ -328,44 +306,207 @@
 
   <div class="card">
     <div class="stats-grid">
-      <div><div class="stat-num" id="st-flips">0</div><div class="stat-label">翻转次数</div></div>
-      <div><div class="stat-num" id="st-duration">00:00</div><div class="stat-label">面朝下时长</div></div>
-      <div><div class="stat-num" id="st-points">0</div><div class="stat-label">数据点</div></div>
+      <div><div class="stat-num" id="st-flips">0</div><div class="stat-label" data-i18n="session.stFlips"></div></div>
+      <div><div class="stat-num" id="st-duration">00:00</div><div class="stat-label" data-i18n="session.stDuration"></div></div>
+      <div><div class="stat-num" id="st-points">0</div><div class="stat-label" data-i18n="session.stPoints"></div></div>
     </div>
   </div>
 
   <div id="session-actions">
-    <button class="btn btn-ghost" onclick="earlyStop()" style="border-color:var(--border)">提前结束</button>
+    <button class="btn btn-ghost" onclick="earlyStop()" style="border-color:var(--border)" data-i18n="session.earlyStop"></button>
   </div>
   <div id="session-done" style="display:none">
-    <button class="btn btn-green" onclick="exportData()" id="btn-export" style="width:100%;padding:14px;font-size:17px;margin-bottom:12px">📦 采集完成，导出数据</button>
-    <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px">⬆ 点击上方绿色大按钮下载 bundle.json（含传感器原始数据）</p>
-    <button class="btn btn-ghost" onclick="resetToSetup()" style="margin-top:4px">返回采集页</button>
+    <button class="btn btn-green" onclick="exportData()" id="btn-export" style="width:100%;padding:14px;font-size:17px;margin-bottom:12px" data-i18n="session.exportBtn"></button>
+    <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px" data-i18n="session.exportHint"></p>
+    <button class="btn btn-ghost" onclick="resetToSetup()" style="margin-top:4px" data-i18n="session.back"></button>
   </div>
 </div>
 
 <!-- ═══ Screen 4: History ═══ -->
 <div id="screen-data" class="screen">
-  <div class="title" style="font-size:24px">历史数据</div>
+  <div class="title" style="font-size:24px" data-i18n="data.title"></div>
   <div class="subtitle" id="data-count">0 条记录</div>
   <div id="data-list" style="max-height:50vh;overflow-y:auto"></div>
-  <button class="btn btn-ghost" onclick="exportAll()" style="font-size:12px;color:var(--muted);border-color:var(--border)">导出全部元数据（仅摘要，不含传感器数据）</button>
+  <button class="btn btn-ghost" onclick="exportAll()" style="font-size:12px;color:var(--muted);border-color:var(--border)" data-i18n="data.exportAll"></button>
 </div>
 
 <!-- ═══ Bottom Navigation ═══ -->
 <div class="bottom-nav" id="bottomNav">
   <div class="nav-item active" onclick="showScreen('screen-guide')" id="nav-guide">
-    <span class="nav-icon">📋</span>使用说明
+    <span class="nav-icon">📋</span><span data-i18n="nav.guide"></span>
   </div>
   <div class="nav-item" onclick="showScreen('screen-setup')" id="nav-collect">
-    <span class="nav-icon">📱</span>采集工具
+    <span class="nav-icon">📱</span><span data-i18n="nav.collect"></span>
   </div>
   <div class="nav-item" onclick="showScreen('screen-data')" id="nav-data">
-    <span class="nav-icon">📂</span>历史数据
+    <span class="nav-icon">📂</span><span data-i18n="nav.data"></span>
   </div>
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// i18n
+// ═══════════════════════════════════════════════════════════
+const I18N = {
+  zh: {
+    'doc.title': 'FlipFocus — 手机翻转检测工具',
+    'perm.subtitle': '注意力仪式研究 · 传感器采集',
+    'perm.h3': '📱 需要传感器权限',
+    'perm.body': '本工具需要访问设备的运动传感器和光线传感器来检测手机翻转状态。<br>不收集任何个人身份信息、位置或通信内容。',
+    'perm.local': '所有数据仅存储在浏览器本地，不上传云端',
+    'perm.btn': '授权并开始',
+
+    'guide.subtitle': '使用说明 · 一步一步跟着做',
+    'guide.what': '<strong>📱 用浏览器测手机翻转</strong><br>这个页面从手机传感器读取加速度与光线，自动判断手机是否被翻到面朝下，并把数据导出成 JSON 文件。不需要安装任何 App。<br><span style="font-size:11px;color:var(--muted)">所有数据只保存在你自己的浏览器里，不上传服务器。</span>',
+    'guide.flow1': '1.授权', 'guide.flow2': '2.校准', 'guide.flow3': '3.采集', 'guide.flow4': '4.导出',
+    'guide.s1t': '打开页面并授权（10 秒）',
+    'guide.s1d': '用手机浏览器打开本页。<br><span style="color:var(--orange)">iOS</span>：需用 <strong>Safari</strong>，并手动点「授权」<br><span style="color:var(--green)">Android</span>：Chrome / Edge / 自带浏览器都可以<br>首次会弹出传感器权限请求，点<strong>「授权并开始」</strong>。',
+    'guide.s2t': '校准传感器阈值（1 分钟）',
+    'guide.s2d': '切到<strong>「采集」</strong>标签，把手机<strong>面朝下放在桌上</strong>：<br>· accZ 应显示约 <strong>-0.9 ~ -1.0g</strong>（若偏差大，调 Z 阈值）<br>· 光线值应 <strong>&lt; 10 lux</strong>（若偏高，调光线阈值）<br><span style="color:var(--red)">⚠ 每台手机第一次使用都要校准</span>',
+    'guide.s3t': '开始采集',
+    'guide.s3d': '填一个<strong>编号</strong>（随便起，只用来区分数据文件），点「开始采集」。<br>默认 25 分钟，倒计时结束自动停止；也可以随时点「提前结束」保留已采集的数据。<br><span style="font-size:11px;color:var(--muted)">想快速试一下导出功能，可勾选 Debug 模式（缩短为 2 分钟）。</span>',
+    'guide.s4t': '导出数据',
+    'guide.s4d': '结束后点<strong>「导出数据」</strong>下载一个 JSON 文件：<br><code style="background:var(--border);padding:1px 6px;border-radius:4px;font-size:11px">xxx_bundle.json</code> 包含传感器时序 + 翻转事件 + 本次采集信息<br><span style="font-size:11px;color:var(--muted)">（所有数据打包在一个文件里）</span>',
+    'guide.degrade': '<strong>📶 不同手机的传感器不一样</strong><br>页面启动时会自动探测可用传感器，并选择合适的融合方式：<br>· <strong>加速度计 + 光线</strong>（多数 Android Chrome）<br>· <strong>仅加速度计</strong>（iOS Safari，或未开放光线接口的机型）<br>缺少某个传感器不会中断采集，只是判定依据少一项。',
+
+    'setup.subtitle': '手机翻转检测与数据采集工具',
+    'setup.idLabel': '编号（用来区分数据文件，随意填）',
+    'setup.idPh': '例如：测试1',
+    'setup.debug': '🧪 Debug模式：缩短至2分钟（仅用于测试导出功能）',
+    'setup.calib': '<strong>📋 传感器阈值校准</strong><br>面朝下放桌上：accZ ≈ -0.9~-1.0g，光线 &lt; 10 lux<br>若偏差大，调整下方参数：',
+    'setup.zLabel': 'Z阈值:', 'setup.lightLabel': '光线阈值:', 'setup.apply': '应用',
+
+    'session.sensorLive': '传感器实时值',
+    'session.accZ': '加速度 Z', 'session.light': '光线', 'session.faceDown': '面朝下',
+    'session.stFlips': '翻转次数', 'session.stDuration': '面朝下时长', 'session.stPoints': '数据点',
+    'session.earlyStop': '提前结束',
+    'session.exportBtn': '📦 采集完成，导出数据',
+    'session.exportHint': '⬆ 点击上方绿色大按钮下载 bundle.json（含传感器原始数据）',
+    'session.back': '返回采集页',
+    'session.badgeUp': '📱 面朝上',
+    'session.badgeDown': '📵 面朝下（专注中）',
+    'session.badgeDone': '✅ 采集完成',
+
+    'data.title': '历史数据',
+    'data.count': '{n} 条记录',
+    'data.empty': '暂无数据',
+    'data.unnamed': '未命名',
+    'data.line': '{date} | 翻转{flips}次 | 数据点{points}',
+    'data.delete': '删除',
+    'data.exportAll': '导出全部元数据（仅摘要，不含传感器数据）',
+
+    'nav.guide': '使用说明', 'nav.collect': '采集工具', 'nav.data': '历史数据',
+
+    'toast.busy': '采集中，请先完成或结束当前采集',
+    'toast.needPerm': '需要传感器权限才能进行采集',
+    'toast.permFail': '权限请求失败: {msg}',
+    'toast.threshold': '阈值: Z<{z}g, 光线<{lux}lux',
+    'toast.exported': '数据已导出 ✓',
+    'toast.copied': '已复制 ✓ 微信发给自己 → 电脑另存为bundle.json',
+    'toast.copiedShort': '已复制 ✓',
+    'toast.noData': '无数据',
+    'toast.metaExported': '元数据已导出',
+    'startBtn': '开始采集（{min}分钟{d}）',
+    'defaultSubject': '测试',
+    'yes': '是', 'no': '否',
+    'lightUnavailable': '不可用',
+    'modeFull': '加速度计 + 光线',
+    'modeAccelOnly': '仅加速度计（光线传感器不可用）',
+    'confirm.earlyStop': '确定提前结束？数据将被保留并导出。',
+    'confirm.delete': '删除？',
+    'boot.found': '⚠️ 检测到上次未导出的采集数据！\n\n编号：{subj}\n已采集：{min}分{sec}秒\n传感器数据：{n}条\n\n点「确定」立即导出，点「取消」忽略。',
+    'exp.title': '📦 数据导出',
+    'exp.autoOk': '✅ 文件已自动下载（如未弹出请用下方备用方案）',
+    'exp.autoFail': '⚠️ 自动下载未触发，请使用下方备用方案',
+    'exp.manual': '<strong>备用方案：</strong>复制下面全部内容 → 微信发给自己 → 在电脑上另存为 <code style="background:var(--border);padding:1px 4px;border-radius:3px">{file}</code>',
+    'exp.copyBtn': '📋 一键复制全部数据',
+    'exp.close': '关闭（数据仍可恢复）'
+  },
+  en: {
+    'doc.title': 'FlipFocus — Phone-Flip Detection Tool',
+    'perm.subtitle': 'Attention ritual study · sensor capture',
+    'perm.h3': '📱 Sensor permission needed',
+    'perm.body': 'This tool reads your device\'s motion and light sensors to detect when the phone is face down.<br>No personal identity, location or communication data is collected.',
+    'perm.local': 'All data stays in your browser. Nothing is uploaded.',
+    'perm.btn': 'Allow and start',
+
+    'guide.subtitle': 'How to use · follow along step by step',
+    'guide.what': '<strong>📱 Detect phone flips with just a browser</strong><br>This page reads acceleration and light from your phone\'s sensors, decides automatically when the phone has been turned face down, and exports the data as a JSON file. No app to install.<br><span style="font-size:11px;color:var(--muted)">All data stays in your own browser. Nothing is sent to a server.</span>',
+    'guide.flow1': '1. Allow', 'guide.flow2': '2. Calibrate', 'guide.flow3': '3. Record', 'guide.flow4': '4. Export',
+    'guide.s1t': 'Open the page and allow access (10 s)',
+    'guide.s1d': 'Open this page in your phone\'s browser.<br><span style="color:var(--orange)">iOS</span>: you must use <strong>Safari</strong> and tap "Allow" manually<br><span style="color:var(--green)">Android</span>: Chrome / Edge / stock browser all work<br>A sensor permission prompt appears the first time — tap <strong>"Allow and start"</strong>.',
+    'guide.s2t': 'Calibrate the sensor thresholds (1 min)',
+    'guide.s2d': 'Switch to the <strong>"Record"</strong> tab and place the phone <strong>face down on a table</strong>:<br>· accZ should read about <strong>-0.9 to -1.0 g</strong> (adjust the Z threshold if it is off)<br>· light should read <strong>&lt; 10 lux</strong> (adjust the light threshold if it is high)<br><span style="color:var(--red)">⚠ Calibrate once on every new phone</span>',
+    'guide.s3t': 'Start recording',
+    'guide.s3d': 'Enter an <strong>ID</strong> (anything you like — it only labels the data file) and tap "Start recording".<br>Default is 25 minutes; it stops automatically when the countdown ends. You can tap "End early" at any time and keep what was recorded.<br><span style="font-size:11px;color:var(--muted)">To try the export quickly, tick Debug mode (shortens it to 2 minutes).</span>',
+    'guide.s4t': 'Export the data',
+    'guide.s4d': 'When it finishes, tap <strong>"Export data"</strong> to download a JSON file:<br><code style="background:var(--border);padding:1px 6px;border-radius:4px;font-size:11px">xxx_bundle.json</code> contains the sensor time series + flip events + this session\'s info<br><span style="font-size:11px;color:var(--muted)">(everything is packed into one file)</span>',
+    'guide.degrade': '<strong>📶 Phones differ in which sensors they expose</strong><br>On start-up the page probes which sensors are available and picks the right fusion mode:<br>· <strong>Accelerometer + light</strong> (most Android Chrome)<br>· <strong>Accelerometer only</strong> (iOS Safari, or phones that do not expose the light sensor)<br>A missing sensor never stops the recording — it just removes one piece of evidence.',
+
+    'setup.subtitle': 'Phone-flip detection and data collection tool',
+    'setup.idLabel': 'ID (labels the data file — anything you like)',
+    'setup.idPh': 'e.g. test1',
+    'setup.debug': '🧪 Debug mode: shorten to 2 minutes (for testing the export only)',
+    'setup.calib': '<strong>📋 Sensor threshold calibration</strong><br>Face down on a table: accZ ≈ -0.9 to -1.0 g, light &lt; 10 lux<br>If it is off, adjust the parameters below:',
+    'setup.zLabel': 'Z threshold:', 'setup.lightLabel': 'Light threshold:', 'setup.apply': 'Apply',
+
+    'session.sensorLive': 'Live sensor values',
+    'session.accZ': 'Accel Z', 'session.light': 'Light', 'session.faceDown': 'Face down',
+    'session.stFlips': 'Flips', 'session.stDuration': 'Face-down time', 'session.stPoints': 'Data points',
+    'session.earlyStop': 'End early',
+    'session.exportBtn': '📦 Recording complete — export data',
+    'session.exportHint': '⬆ Tap the big green button above to download bundle.json (raw sensor data included)',
+    'session.back': 'Back to record',
+    'session.badgeUp': '📱 Face up',
+    'session.badgeDown': '📵 Face down (focusing)',
+    'session.badgeDone': '✅ Recording complete',
+
+    'data.title': 'History',
+    'data.count': '{n} record(s)',
+    'data.empty': 'No data yet',
+    'data.unnamed': 'Untitled',
+    'data.line': '{date} | {flips} flips | {points} data points',
+    'data.delete': 'Delete',
+    'data.exportAll': 'Export all metadata (summary only, no sensor data)',
+
+    'nav.guide': 'Guide', 'nav.collect': 'Record', 'nav.data': 'History',
+
+    'toast.busy': 'Recording in progress — finish or end the session first',
+    'toast.needPerm': 'Sensor permission is required to record',
+    'toast.permFail': 'Permission request failed: {msg}',
+    'toast.threshold': 'Thresholds: Z<{z}g, light<{lux}lux',
+    'toast.exported': 'Data exported ✓',
+    'toast.copied': 'Copied ✓ paste it somewhere to save bundle.json',
+    'toast.copiedShort': 'Copied ✓',
+    'toast.noData': 'No data',
+    'toast.metaExported': 'Metadata exported',
+    'startBtn': 'Start recording ({min} min{d})',
+    'defaultSubject': 'test',
+    'yes': 'Yes', 'no': 'No',
+    'lightUnavailable': 'n/a',
+    'modeFull': 'Accelerometer + light',
+    'modeAccelOnly': 'Accelerometer only (light sensor unavailable)',
+    'confirm.earlyStop': 'End early? The recorded data will be kept and exported.',
+    'confirm.delete': 'Delete this record?',
+    'boot.found': '⚠️ Unsaved sensor data from a previous session was found.\n\nID: {subj}\nRecorded: {min}m {sec}s\nSensor samples: {n}\n\nOK exports it now. Cancel ignores it.',
+    'exp.title': '📦 Export data',
+    'exp.autoOk': '✅ The file downloaded automatically (use the fallback below if it did not appear)',
+    'exp.autoFail': '⚠️ Automatic download did not trigger — use the fallback below',
+    'exp.manual': '<strong>Fallback:</strong> copy everything below and save it on a computer as <code style="background:var(--border);padding:1px 4px;border-radius:3px">{file}</code>',
+    'exp.copyBtn': '📋 Copy all data',
+    'exp.close': 'Close (the data can still be recovered)'
+  }
+};
+
+let LANG = localStorage.getItem('flipfocus_lang')
+        || ((navigator.language||'').toLowerCase().startsWith('zh') ? 'zh' : 'en');
+
+function t(k, vars) {
+  let s = (I18N[LANG] && I18N[LANG][k]) || I18N.zh[k] || k;
+  if (vars) for (const key in vars) s = s.split('{' + key + '}').join(vars[key]);
+  return s;
+}
+
 // ═══════════════════════════════════════════════════════════
 // State
 // ═══════════════════════════════════════════════════════════
@@ -388,6 +529,9 @@ let state = {
   sessionTimer: null,
   motionHandler: null,
   lightSensor: null,
+  badgeState: 'up',      // 'up' | 'down' | 'done'
+  faceDownNow: false,
+  lightState: null,      // null = 未开始 · 'unavailable' · 数值
 };
 
 let permGranted = false;
@@ -399,7 +543,7 @@ let lightSensorAvailable = false;
 function showScreen(id) {
   // Don't allow navigation during active session
   if (state.sessionActive && id !== 'screen-session') {
-    showToast('采集中，请先完成或结束当前采集', 'warn'); return;
+    showToast(t('toast.busy'), 'warn'); return;
   }
 
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -428,8 +572,8 @@ async function requestPermission() {
   if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
     try {
       const resp = await DeviceMotionEvent.requestPermission();
-      if (resp !== 'granted') { showToast('需要传感器权限才能进行采集', 'warn'); return; }
-    } catch(e) { showToast('权限请求失败: ' + e.message, 'warn'); return; }
+      if (resp !== 'granted') { showToast(t('toast.needPerm'), 'warn'); return; }
+    } catch(e) { showToast(t('toast.permFail', {msg: e.message}), 'warn'); return; }
   }
   permGranted = true;
   initSetupScreen();
@@ -445,7 +589,7 @@ function initSetupScreen() {
 function updateConfig() {
   state.cfgZ = parseFloat(document.getElementById('cfg-z').value) || -0.75;
   state.cfgLight = parseFloat(document.getElementById('cfg-light').value) || 15;
-  showToast(`阈值: Z<${state.cfgZ}g, 光线<${state.cfgLight}lux`, 'ok');
+  showToast(t('toast.threshold', {z: state.cfgZ, lux: state.cfgLight}), 'ok');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -455,14 +599,14 @@ function toggleDebug() {
   state.debugMode = document.getElementById('debug-mode').checked;
   const btn = document.getElementById('btn-start');
   const duration = state.debugMode ? 2 : 25;
-  btn.textContent = '开始采集（' + duration + '分钟' + (state.debugMode ? ' · Debug' : '') + '）';
+  btn.textContent = t('startBtn', {min: duration, d: state.debugMode ? ' · Debug' : ''});
 }
 
 function getSessionDuration() { return state.debugMode ? 2 : 25; }
 
 function startSession() {
   const el = document.getElementById('subj-input');
-  if (el) state.subject = (el.value || '').trim() || '测试';
+  if (el) state.subject = (el.value || '').trim() || t('defaultSubject');
   state.dataLog = [];
   state.flipEvents = [];
   state.elapsed = 0;
@@ -474,6 +618,9 @@ function startSession() {
   state.totalFaceDownMs = 0;
   state.flipCount = 0;
   state.sessionActive = true;
+  state.badgeState = 'up';
+  state.faceDownNow = false;
+  state.lightState = null;
   if (state.flipConfirmTimer) clearTimeout(state.flipConfirmTimer);
 
   document.getElementById('info-subj').textContent = state.subject;
@@ -481,7 +628,7 @@ function startSession() {
   document.getElementById('session-actions').style.display = 'block';
   document.getElementById('session-done').style.display = 'none';
   document.getElementById('badge').className = 'status-badge status-up';
-  document.getElementById('badge').textContent = '📱 面朝上';
+  document.getElementById('badge').textContent = t('session.badgeUp');
 
   showScreen('screen-session');
   setNavVisible(false); // Hide nav during recording
@@ -560,6 +707,7 @@ function startLightSensor() {
       state.lightSensor.addEventListener('reading', () => {
         if (!state.sessionActive) return;
         const lux = state.lightSensor.illuminance;
+        state.lightState = lux;
         document.getElementById('s-light').textContent = Math.round(lux) + ' lux';
         document.getElementById('s-light').className = 'sensor-val' + (lux < state.cfgLight ? ' on' : '');
         if (state.dataLog.length > 0) state.dataLog[state.dataLog.length - 1].light = Math.round(lux);
@@ -567,18 +715,21 @@ function startLightSensor() {
       });
       state.lightSensor.addEventListener('error', () => {
         lightSensorAvailable = false;
-        document.getElementById('s-light').textContent = '不可用';
+        state.lightState = 'unavailable';
+        document.getElementById('s-light').textContent = t('lightUnavailable');
         updateSensorModeUI();
       });
       state.lightSensor.start();
       lightSensorAvailable = true;
     } catch(e) {
       lightSensorAvailable = false;
-      document.getElementById('s-light').textContent = '不可用';
+      state.lightState = 'unavailable';
+      document.getElementById('s-light').textContent = t('lightUnavailable');
     }
   } else {
     lightSensorAvailable = false;
-    document.getElementById('s-light').textContent = '不可用';
+    state.lightState = 'unavailable';
+    document.getElementById('s-light').textContent = t('lightUnavailable');
   }
   updateSensorModeUI();
 }
@@ -587,10 +738,10 @@ function updateSensorModeUI() {
   const el = document.getElementById('sensor-mode');
   if (el) {
     if (lightSensorAvailable) {
-      el.textContent = '加速度计 + 光线';
+      el.textContent = t('modeFull');
       el.style.color = 'var(--green)';
     } else {
-      el.textContent = '仅加速度计（光线传感器不可用）';
+      el.textContent = t('modeAccelOnly');
       el.style.color = 'var(--orange)';
     }
   }
@@ -611,7 +762,8 @@ function checkFaceDown(zG, ts) {
     : (zG < state.cfgZ);
 
   if (state.dataLog.length > 0) state.dataLog[state.dataLog.length - 1].face_down = faceDownNow ? 1 : 0;
-  document.getElementById('s-face').textContent = faceDownNow ? '是' : '否';
+  state.faceDownNow = faceDownNow;
+  document.getElementById('s-face').textContent = faceDownNow ? t('yes') : t('no');
   document.getElementById('s-face').className = 'sensor-val' + (faceDownNow ? ' on' : '');
 
   if (faceDownNow && state.faceDownSince === null) {
@@ -619,8 +771,9 @@ function checkFaceDown(zG, ts) {
     state.flipConfirmTimer = setTimeout(() => {
       state.faceDown = true; state.flipCount++;
       state.flipEvents.push({ type: 'FLIP_DOWN', time: new Date().toISOString(), acc_z: zG, light: lastLight });
+      state.badgeState = 'down';
       document.getElementById('badge').className = 'status-badge status-down';
-      document.getElementById('badge').textContent = '📵 面朝下（专注中）';
+      document.getElementById('badge').textContent = t('session.badgeDown');
       updateTimerUI();
       if (navigator.vibrate) navigator.vibrate(100);
     }, 3000);
@@ -632,8 +785,9 @@ function checkFaceDown(zG, ts) {
       state.flipEvents.push({ type: 'FLIP_UP', time: new Date().toISOString(), duration_ms: duration });
     }
     state.faceDownSince = null; state.faceDown = false;
+    state.badgeState = 'up';
     document.getElementById('badge').className = 'status-badge status-up';
-    document.getElementById('badge').textContent = '📱 面朝上';
+    document.getElementById('badge').textContent = t('session.badgeUp');
     updateTimerUI();
   }
 }
@@ -651,13 +805,14 @@ function endSession() {
 
   document.getElementById('session-actions').style.display = 'none';
   document.getElementById('session-done').style.display = 'block';
+  state.badgeState = 'done';
   document.getElementById('badge').className = 'status-badge status-down';
-  document.getElementById('badge').textContent = '✅ 采集完成';
+  document.getElementById('badge').textContent = t('session.badgeDone');
   setNavVisible(true);
 }
 
 function earlyStop() {
-  if (!confirm('确定提前结束？数据将被保留并导出。')) return;
+  if (!confirm(t('confirm.earlyStop'))) return;
   endSession();
 }
 
@@ -666,7 +821,7 @@ function exportData() {
 
   const meta = {
     participant: state.subject, condition: state.condition, repetition: state.repetition,
-    date: new Date().toLocaleDateString('zh-CN'), duration_min: getSessionDuration(),
+    date: new Date().toLocaleDateString(LANG === 'zh' ? 'zh-CN' : 'en-US'), duration_min: getSessionDuration(),
     flip_count: state.flipCount, total_face_down_sec: (state.totalFaceDownMs / 1000).toFixed(1),
     data_points: state.dataLog.length,
   };
@@ -703,18 +858,18 @@ function exportData() {
   }
   div.innerHTML =
     '<div style="max-width:480px;margin:0 auto">' +
-    '<div class="title" style="font-size:24px;margin-bottom:8px">📦 数据导出</div>' +
+    '<div class="title" style="font-size:24px;margin-bottom:8px">' + t('exp.title') + '</div>' +
     '<div class="subtitle" style="margin-bottom:12px">' + filename + '</div>' +
-    (downloadOk ? '<div style="padding:10px;border-radius:10px;background:#E6F7ED;color:#157A3A;font-size:14px;margin-bottom:12px;text-align:center">✅ 文件已自动下载（如未弹出请用下方备用方案）</div>' : '<div style="padding:10px;border-radius:10px;background:#FFF3E0;color:#B85C00;font-size:14px;margin-bottom:12px;text-align:center">⚠️ 自动下载未触发，请使用下方备用方案</div>') +
-    '<div style="font-size:13px;color:var(--muted);margin-bottom:8px"><strong>备用方案：</strong>复制下面全部内容 → 微信发给自己 → 在电脑上另存为 <code style="background:var(--border);padding:1px 4px;border-radius:3px">' + filename + '</code></div>' +
+    (downloadOk ? '<div style="padding:10px;border-radius:10px;background:#E6F7ED;color:#157A3A;font-size:14px;margin-bottom:12px;text-align:center">' + t('exp.autoOk') + '</div>' : '<div style="padding:10px;border-radius:10px;background:#FFF3E0;color:#B85C00;font-size:14px;margin-bottom:12px;text-align:center">' + t('exp.autoFail') + '</div>') +
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:8px">' + t('exp.manual', {file: filename}) + '</div>' +
     '<textarea id="export-textarea" readonly style="width:100%;height:200px;padding:10px;border-radius:10px;border:1px solid var(--border);font-family:monospace;font-size:11px;background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px"' + '>' + jsonStr.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&/g,'&amp;').replace(/&amp;lt;/g,'&lt;').replace(/&amp;gt;/g,'&gt;') + '</textarea>' +
-    '<button class="btn btn-primary" onclick="copyExport()" style="width:100%;margin-bottom:8px">📋 一键复制全部数据</button>' +
-    '<button class="btn btn-ghost" onclick="document.getElementById(\'export-fallback\').style.display=\'none\'" style="width:100%;font-size:12px;color:var(--muted)">关闭（数据仍可恢复）</button>' +
+    '<button class="btn btn-primary" onclick="copyExport()" style="width:100%;margin-bottom:8px">' + t('exp.copyBtn') + '</button>' +
+    '<button class="btn btn-ghost" onclick="document.getElementById(\'export-fallback\').style.display=\'none\'" style="width:100%;font-size:12px;color:var(--muted)">' + t('exp.close') + '</button>' +
     '</div>';
   div.style.display = 'block';
 
   saveToHistory(prefix, meta);
-  showToast('数据已导出 ✓', 'ok');
+  showToast(t('toast.exported'), 'ok');
 }
 
 function copyExport() {
@@ -724,14 +879,14 @@ function copyExport() {
   var raw = ta.value.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(raw).then(function(){
-      showToast('已复制 ✓ 微信发给自己 → 电脑另存为bundle.json', 'ok');
+      showToast(t('toast.copied'), 'ok');
     }).catch(function(){
       ta.select(); document.execCommand('copy');
-      showToast('已复制 ✓', 'ok');
+      showToast(t('toast.copiedShort'), 'ok');
     });
   } else {
     ta.select(); document.execCommand('copy');
-    showToast('已复制 ✓', 'ok');
+    showToast(t('toast.copiedShort'), 'ok');
   }
 }
 
@@ -760,22 +915,22 @@ function saveToHistory(prefix, meta) {
 
 function refreshDataList() {
   const h = JSON.parse(localStorage.getItem('flipfocus_history') || '[]').reverse();
-  document.getElementById('data-count').textContent = h.length + ' 条记录';
+  document.getElementById('data-count').textContent = t('data.count', {n: h.length});
   if (h.length === 0) {
-    document.getElementById('data-list').innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px">暂无数据</p>';
+    document.getElementById('data-list').innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px">' + t('data.empty') + '</p>';
     return;
   }
   document.getElementById('data-list').innerHTML = h.map((r, i) => `
     <div style="background:var(--card);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border)">
-      <div style="font-weight:700;font-size:14px;margin-bottom:4px">${[r.meta.participant, r.meta.condition].filter(Boolean).join(' · ') || '未命名'}</div>
-      <div style="font-size:12px;color:var(--muted)">${r.meta.date} | 翻转${r.meta.flip_count}次 | 数据点${r.meta.data_points}</div>
-      <button onclick="deleteHistoryItem(${h.length-1-i})" style="margin-top:6px;padding:4px 10px;border-radius:6px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:11px;cursor:pointer">删除</button>
+      <div style="font-weight:700;font-size:14px;margin-bottom:4px">${[r.meta.participant, r.meta.condition].filter(Boolean).join(' · ') || t('data.unnamed')}</div>
+      <div style="font-size:12px;color:var(--muted)">${t('data.line', {date: r.meta.date, flips: r.meta.flip_count, points: r.meta.data_points})}</div>
+      <button onclick="deleteHistoryItem(${h.length-1-i})" style="margin-top:6px;padding:4px 10px;border-radius:6px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:11px;cursor:pointer">${t('data.delete')}</button>
     </div>
   `).join('');
 }
 
 function deleteHistoryItem(idx) {
-  if (!confirm('删除？')) return;
+  if (!confirm(t('confirm.delete'))) return;
   const h = JSON.parse(localStorage.getItem('flipfocus_history') || '[]');
   h.splice(idx, 1);
   localStorage.setItem('flipfocus_history', JSON.stringify(h));
@@ -784,9 +939,9 @@ function deleteHistoryItem(idx) {
 
 function exportAll() {
   const h = JSON.parse(localStorage.getItem('flipfocus_history') || '[]');
-  if (h.length === 0) { showToast('无数据', 'warn'); return; }
+  if (h.length === 0) { showToast(t('toast.noData'), 'warn'); return; }
   downloadFile('flipfocus_all_meta_' + Date.now() + '.json', JSON.stringify(h.map(r => r.meta), null, 2), 'application/json');
-  showToast('元数据已导出', 'ok');
+  showToast(t('toast.metaExported'), 'ok');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -797,6 +952,41 @@ function showToast(msg, type) {
   el.textContent = msg; el.className = 'toast ' + (type || 'ok'); el.style.display = 'block';
   clearTimeout(el._timeout);
   el._timeout = setTimeout(() => { el.style.display = 'none'; }, 2500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Language
+// ═══════════════════════════════════════════════════════════
+function applyLang() {
+  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'en';
+  document.title = t('doc.title');
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.innerHTML = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  document.getElementById('langBtn').textContent = LANG === 'zh' ? 'EN' : '中文';
+
+  refreshDynamicUI();
+  if (document.getElementById('screen-data').classList.contains('active')) refreshDataList();
+}
+
+// 按当前状态重刷动态文字（切语言时用）
+function refreshDynamicUI() {
+  toggleDebug();
+  const badge = document.getElementById('badge');
+  if (badge) badge.textContent = t({up:'session.badgeUp', down:'session.badgeDown', done:'session.badgeDone'}[state.badgeState]);
+  const faceEl = document.getElementById('s-face');
+  if (faceEl) faceEl.textContent = state.faceDownNow ? t('yes') : t('no');
+  const lightEl = document.getElementById('s-light');
+  if (lightEl) {
+    if (state.lightState === 'unavailable') lightEl.textContent = t('lightUnavailable');
+    else if (typeof state.lightState === 'number') lightEl.textContent = Math.round(state.lightState) + ' lux';
+  }
+  if (state.lightState !== null) updateSensorModeUI();
+}
+
+function toggleLang() {
+  LANG = LANG === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('flipfocus_lang', LANG);
+  applyLang();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -811,7 +1001,10 @@ function showToast(msg, type) {
       if (backup.sensors && backup.sensors.length > 0) {
         var mins = Math.floor(backup.elapsed / 60);
         var secs = backup.elapsed % 60;
-        if (confirm('⚠️ 检测到上次未导出的采集数据！\n\n编号：' + (backup.participant || '未填') + '\n已采集：' + mins + '分' + secs + '秒\n传感器数据：' + backup.sensors.length + '条\n\n点「确定」立即导出，点「取消」忽略。')) {
+        if (confirm(t('boot.found', {
+              subj: backup.participant || t('data.unnamed'),
+              min: mins, sec: secs, n: backup.sensors.length
+            }))) {
           state.subject = backup.participant;
           state.condition = backup.condition;
           state.repetition = backup.repetition;
@@ -826,6 +1019,7 @@ function showToast(msg, type) {
       }
     } catch(e) {}
   }
+  applyLang();
   if (typeof DeviceMotionEvent === 'undefined') {
     permGranted = true;
     initSetupScreen();
